@@ -1,0 +1,213 @@
+{
+    "appName": {
+        "message": "ChatWall: KI-Firewall"
+    },
+    "overlay_title": {
+        "message": "ChatWall: KI-Firewall"
+    },
+    "btn_upgrade": {
+        "message": "Auf Premium upgraden"
+    },
+    "menu_license": {
+        "message": "Lizenzverwaltung"
+    },
+    "menu_help": {
+        "message": "Hilfe"
+    },
+    "menu_privacy": {
+        "message": "Datenschutz & Sicherheit"
+    },
+    "menu_legal": {
+        "message": "Lizenz"
+    },
+    "menu_terms": {
+        "message": "Nutzungsbedingungen"
+    },
+    "menu_manage_sub": {
+        "message": "Konto"
+    },
+    "menu_about": {
+        "message": "Ãœber ChatWall"
+    },
+    "panel_original_prompt": {
+        "message": "Original-Prompt (Hier schreiben)"
+    },
+    "placeholder_prompt": {
+        "message": "Prompt hier eingeben oder einfÃ¼gen..."
+    },
+    "panel_anonymized": {
+        "message": "Anonymisiert (Wird an KI gesendet)"
+    },
+    "title_anonymize_mode": {
+        "message": "Mit KI chatten. Daten privat halten"
+    },
+    "title_deanonymize_mode": {
+        "message": "Deanonymisierter Inhalt"
+    },
+    "panel_original_preview": {
+        "message": "Originalinhalt (Vorschau)"
+    },
+    "btn_send": {
+        "message": "An KI-Prompt senden"
+    },
+    "btn_cancel": {
+        "message": "Abbrechen"
+    },
+    "btn_copy": {
+        "message": "Inhalt kopieren"
+    },
+    "plan_label": {
+        "message": "Plan:"
+    },
+    "ctx_copy": {
+        "message": "Kopieren"
+    },
+    "ctx_read_docs": {
+        "message": "Dokumentation lesen"
+    },
+    "ctx_paste": {
+        "message": "Einfügen"
+    },
+    "ctx_cut": {
+        "message": "Ausschneiden"
+    },
+    "ctx_select_all": {
+        "message": "Alles auswählen"
+    },
+    "ctx_mask": {
+        "message": "Auswahl maskieren"
+    },
+    "ctx_unmask": {
+        "message": "Auswahl demaskieren"
+    },
+    "help_custom_tool_mask": {
+        "message": "Maskieren"
+    },
+    "help_custom_tool_unmask": {
+        "message": "Demaskieren"
+    },
+    "ctx_add_fav": {
+        "message": "Zu Favoriten hinzufügen"
+    },
+    "ctx_rem_fav": {
+        "message": "Favorit entfernen"
+    },
+    "ctx_premium_tag": {
+        "message": "(Premium)"
+    },
+    "rc_unmask_preview": {
+        "message": "Demaskieren (Vorschau)"
+    },
+    "rc_unmask_copy": {
+        "message": "Demaskieren & Kopieren"
+    },
+    "toast_copied": {
+        "message": "In die Zwischenablage kopiert!"
+    },
+    "toast_masked_copied": {
+        "message": "Maskierter Inhalt in die Zwischenablage kopiert!"
+    },
+    "tooltip_sensitive_data": {
+        "message": "Sensible Daten erkannt!"
+    },
+    "tooltip_mask_action": {
+        "message": "Klicken Sie hier, um Ihren Prompt zu schützen und zu maskieren"
+    },
+    "tooltip_use_chatwall": {
+        "message": "Klicken Sie hier, um diese Daten vor dem Senden zu sichern und zu maskieren."
+    },
+    "tooltip_response_done": {
+        "message": "Antwort abgeschlossen"
+    },
+    "tooltip_click_unmask": {
+        "message": "Klicken um Inhalt zu demaskieren und anzuzeigen.<br>oder <b>Rechtsklick</b> (Auswahl oder Kopier-Symbol)"
+    },
+    "license_settings": {
+        "message": "Lizenz-Einstellungen"
+    },
+    "lbl_email": {
+        "message": "Konto-E-Mail"
+    },
+    "lbl_key": {
+        "message": "Lizenzschlüssel"
+    },
+    "link_forgot": {
+        "message": "Schlüssel vergessen?"
+    },
+    "link_get_license": {
+        "message": "Lizenz erhalten"
+    },
+    "btn_reset": {
+        "message": "Geräte zurücksetzen"
+    },
+    "btn_manage": {
+        "message": "Konto verwalten"
+    },
+    "btn_close": {
+        "message": "Schließen"
+    },
+    "btn_activate": {
+        "message": "Aktivieren"
+    },
+    "popup_masked_warn_title": {
+        "message": "Maskierter Inhalt erkannt"
+    },
+    "popup_masked_warn_msg": {
+        "message": "Zum Senden klicken Sie auf <b>Abbrechen</b> und nutzen den <b>Senden</b>-Knopf des Chats.<br>Möchten Sie senden oder neu bearbeiten?"
+    },
+    "btn_edit_prompt": {
+        "message": "Neu bearbeiten"
+    },
+    "btn_popup_send_action": {
+        "message": "Senden"
+    },
+    "tooltip_premium_reserved": {
+        "message": "Dieser Inhalt ist für Premium-Benutzer reserviert. Upgraden Sie für automatische Maskierung. Sie können es immer noch manuell per Rechtsklick oder Maskensymbolen maskieren."
+    },
+    "tooltip_premium_reserved_safe": {
+        "message": "Dieser Inhalt ist für Premium-Benutzer reserviert. (Anmeldung erforderlich). Sie können es immer noch manuell per Rechtsklick oder Maskensymbolen maskieren."
+    },
+    "license_msg_fill_required": {
+        "message": "Bitte geben Sie E-Mail und Lizenzschlüssel ein."
+    },
+    "license_msg_verifying": {
+        "message": "Verifizierung mit Server..."
+    },
+    "license_msg_success": {
+        "message": "Erfolg! Plan: $PLAN$",
+        "placeholders": {
+            "plan": {
+                "content": "$1"
+            }
+        }
+    },
+    "license_msg_limit_reached": {
+        "message": "⚠️ $MESSAGE$<br><br>Bitte <a href='$LINK_UPGRADE$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>Plan upgraden</a> oder <a href='$LINK_RESET$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>Geräte im Dashboard zurücksetzen</a>.",
+        "placeholders": {
+            "message": {
+                "content": "$1"
+            },
+            "link_upgrade": {
+                "content": "$2"
+            },
+            "link_reset": {
+                "content": "$3"
+            }
+        }
+    },
+    "license_msg_network_error": {
+        "message": "Netzwerkverbindung fehlgeschlagen. Bitte versuchen Sie es erneut und überprüfen Sie Ihre Internetverbindung.<br>Wenn das Problem weiterhin besteht, kontaktieren Sie support@chatwall.io"
+    },
+    "license_button_reset_warning": {
+        "message": "Warnung: Dies wird alle anderen Geräte mit dieser Lizenz trennen. Fortfahren?"
+    },
+    "license_button_resetting": {
+        "message": "Zurücksetzen..."
+    },
+    "license_button_reset_default": {
+        "message": "⚠️ Aktive Geräte zurücksetzen"
+    },
+    "toast_unmasked_copied": {
+        "message": "Demaskierter Inhalt in die Zwischenablage kopiert"
+    }
+}

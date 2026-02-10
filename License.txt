@@ -1,0 +1,26 @@
+ChatWall License
+
+1. Permissions
+   - You are allowed to view the source code, which is available on GitHub (https://github.com/ChatWall-io/chatwall), for security auditing and transparency purposes.
+   - You are allowed to modify the source code for your own personal, private use and/or contribution.
+
+2. Restrictions
+   - You may NOT resell, redistribute, or republish this software (modified or unmodified).
+   - You may NOT upload this software to the Chrome Web Store, Microsoft Edge Add-ons, Firefox Add-ons, Apple App Store, or any other extension marketplace.
+   - Commercial distribution is strictly prohibited.
+
+3. Disclaimer of Warranty & Liability
+ 
+   ChatWall is an assistive tool designed to help identify and mask sensitive data. It relies on pattern matching and heuristics which may result in false positives (masking non-sensitive data) or false negatives (missing sensitive data).
+
+   YOU ARE SOLELY RESPONSIBLE FOR REVIEWING AND VERIFYING ALL DATA BEFORE SUBMITTING IT TO ANY AI SERVICE.
+
+   StarObject S.A. (and its affiliates) disclaim all liability for any data leaks, privacy breaches, or other damages resulting from reliance on this tool. By using this software, you acknowledge that no automated system is perfect and you accept full responsibility for your data privacy practices.
+  
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+4. Copyright
+   Copyright © 2025 StarObject S.A. - Philippe Collignon
+   All Rights Reserved.

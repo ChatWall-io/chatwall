@@ -1,0 +1,1338 @@
+:host {
+    font-family: 'Segoe UI', sans-serif;
+    color: #334155;
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+/* --- BACKDROP --- */
+.overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2147483647;
+}
+
+.overlay-wrapper {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    color: #334155;
+    width: 85%;
+    height: 85%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    position: relative;
+}
+
+/* --- HEADER --- */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.brand-logo {
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+.header-divider {
+    width: 1px;
+    height: 24px;
+    background: #cbd5e1;
+}
+
+.app-title {
+    font-weight: 500;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.btn-close:hover {
+    color: #ef4444;
+}
+
+/* --- WORKSPACE --- */
+.workspace {
+    display: flex;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+}
+
+.panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+    border-right: 1px solid #e2e8f0;
+    position: relative;
+    background: #fff;
+    min-width: 0;
+}
+
+.panel:last-child {
+    border-right: none;
+}
+
+.panel-header {
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    height: 32px;
+}
+
+/* --- EDITOR CONTAINER --- */
+.editor-container {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.editor-container:focus-within {
+    border-color: #6366f1;
+}
+
+/* SHARED TYPOGRAPHY */
+.editor-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 20px 20px 80px 20px;
+    border: none;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 24px;
+    letter-spacing: normal;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    /* FIX: Use fixed pixel line-height to ensure perfect sync between textarea and div */
+    line-height: 24px;
+}
+
+/* 1. Background Layer (Highlights) */
+#inputHighlights {
+    z-index: 1;
+    color: #334155;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    pointer-events: none !important;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 2. Foreground Layer (Input) */
+#inputText {
+    z-index: 2;
+    background: transparent;
+    color: transparent;
+    caret-color: #334155;
+    resize: none;
+    outline: none;
+    /* FIX: Ensure zero margins to match the div exactly */
+    margin: 0;
+    padding: 20px 20px 80px 20px;
+    /* Redundant with editor-layer but safe */
+}
+
+#inputText::selection {
+    background: rgba(99, 102, 241, 0.2);
+    color: transparent;
+}
+
+/* --- OUTPUT PANEL --- */
+.output-div {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    /* Fix for offsetTop sync */
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 15px;
+    line-height: 24px;
+    /* Matched to editor-layer for sync */
+    resize: none;
+    background: #f8fafc;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    color: #334155;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    /* Default for Masked View */
+}
+
+/* --- HTML CONTENT (UNMASKED PREVIEW) --- */
+/* This class is added via JS when in 'Deanonymize' mode */
+.output-div.html-content {
+    white-space: normal;
+    /* Fix: Prevent extra newlines from source HTML from creating gaps */
+}
+
+.output-div.html-content pre {
+    white-space: pre-wrap;
+}
+
+.output-div.html-content p {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.output-div.html-content ul,
+.output-div.html-content ol {
+    margin-top: 0;
+    margin-bottom: 12px;
+    padding-left: 20px;
+}
+
+.output-div.html-content li {
+    margin-bottom: 4px;
+}
+
+.output-div.html-content h1,
+.output-div.html-content h2,
+.output-div.html-content h3 {
+    margin-top: 1.2em;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+    color: #0f172a;
+}
+
+.output-div.html-content h3 {
+    font-size: 1.1em;
+}
+
+.output-div.html-content h2 {
+    font-size: 1.3em;
+}
+
+.output-div.html-content h1 {
+    font-size: 1.5em;
+}
+
+/* --- FOOTER LAYOUT --- */
+#footerSection {
+    padding: 15px 25px;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+/* --- BUTTONS --- */
+.btn-primary {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-left: 0;
+}
+
+.btn-primary:hover {
+    background: #4f46e5;
+    transform: translateY(-1px);
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.btn-icon.active {
+    background: #e0e7ff;
+    color: #4338ca;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* --- NEW: UPGRADE BUTTON (Premium) --- */
+.btn-upgrade {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: #7c2d12;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(253, 160, 133, 0.4);
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-upgrade:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(253, 160, 133, 0.5);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+/* --- NEW: SETTINGS MENU --- */
+.settings-menu {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 2147483647;
+    min-width: 180px;
+    overflow: hidden;
+}
+
+.menu-item {
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #334155;
+    transition: background 0.1s;
+}
+
+.menu-item:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+/* --- NEW: MODALS --- */
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2147483647;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #0f172a;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* Instruction Image in Modal */
+.instruction-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: #6366f1;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* --- CONTEXT MENU (INPUT) --- */
+.context-menu {
+    display: none;
+    position: fixed;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    z-index: 2147483647;
+    list-style: none;
+    min-width: 160px;
+}
+
+.context-menu li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 4px;
+}
+
+.context-menu li:hover {
+    background: #f1f5f9;
+}
+
+.text-red {
+    color: #dc2626;
+}
+
+.text-green {
+    color: #16a34a;
+}
+
+.context-menu li.menu-disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+    background: #f8fafc;
+}
+
+.context-menu li.menu-disabled:hover {
+    background: #f8fafc;
+}
+
+.premium-lock-icon {
+    margin-left: auto;
+    font-size: 12px;
+}
+
+/* --- NEW: RESPONSE CONTEXT MENU --- */
+#responseContextMenu {
+    min-width: 200px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    padding: 6px;
+    border-radius: 8px;
+    pointer-events: auto;
+    /* Ensure clickable inside overlay container */
+    animation: menu-fade-in 0.1s ease-out;
+}
+
+#responseContextMenu li {
+    padding: 10px 12px;
+    color: #334155;
+    font-weight: 500;
+}
+
+#responseContextMenu li:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+#responseContextMenu hr {
+    margin: 4px 0;
+    border: none;
+    border-top: 1px solid #e2e8f0;
+}
+
+@keyframes menu-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* --- NEW: RESPONSE TOAST --- */
+#responseToast {
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ========================================= */
+/* --- TOKEN STYLES --- */
+/* ========================================= */
+.token-NAME {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border-color: #bae6fd;
+}
+
+.token-LOC,
+.token-POSTAL,
+.token-CITY,
+.token-COUNTRY {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+    position: relative;
+    z-index: 10;
+}
+
+.token-ORG {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+    border-color: #d8b4fe;
+}
+
+.token-EMAIL {
+    background-color: #ffedd5;
+    color: #c2410c;
+    border-color: #fed7aa;
+}
+
+.token-PHONE {
+    background-color: #ffedd5;
+    color: #9a3412;
+    border-color: #fdba74;
+}
+
+.token-URL {
+    background-color: #cffafe;
+    color: #0891b2;
+    border-color: #a5f3fc;
+    color: #0891b2;
+    border-color: #a5f3fc;
+}
+
+/* --- SECURITY GROUP (AMBER) --- */
+.token-PASS,
+.token-KEY,
+.token-SECRET,
+.token-PIN {
+    background-color: #fffbeb;
+    /* Amber-50 */
+    color: #b45309;
+    /* Amber-700 */
+    border-color: #fcd34d;
+    /* Amber-300 */
+}
+
+.token-PLATE {
+    background-color: #e0e7ff;
+    color: #3730a3;
+    border-color: #c7d2fe;
+}
+
+.token-IBAN,
+.token-CB,
+.token-CRYPTO,
+.token-BIC,
+.token-VCS {
+    background-color: #fef9c3;
+    color: #854d0e;
+    border-bottom: 2px solid #eab308;
+}
+
+.token-MONEY {
+    background-color: #d1fae5;
+    color: #047857;
+    border-color: #6ee7b7;
+}
+
+.token-CB,
+.token-SSN,
+.token-CVV {
+    background-color: #fce7f3;
+    color: #be185d;
+    border-color: #fbcfe8;
+}
+
+.token-CRYPTO {
+    background-color: #fff7ed;
+    color: #9a3412;
+    border-color: #ffedd5;
+}
+
+.token-IP,
+.token-MAC {
+    background-color: #e0f2fe;
+    /* Sky-100 */
+    color: #0369a1;
+    /* Sky-700 */
+    border-color: #bae6fd;
+    /* Sky-200 */
+}
+
+.token-UUID,
+.token-ID,
+.token-VIN,
+.token-USERNAME {
+    background-color: #eef2ff;
+    /* Indigo-50 */
+    color: #3730a3;
+    /* Indigo-800 */
+    border-color: #c7d2fe;
+    /* Indigo-200 */
+}
+
+.token-SECRET,
+.token-PIN,
+.token-JWT,
+.token-KEY,
+.token-AWS {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+}
+
+.token-PASSPORT {
+    background-color: #e0e7ff;
+    color: #3730a3;
+    border-color: #c7d2fe;
+}
+
+.token-DATE,
+.token-TIME {
+    background-color: #fae8ff;
+    color: #86198f;
+    border-color: #f0abfc;
+}
+
+.token-CUSTOM {
+    background-color: #f8fafc;
+    color: #475569;
+    /* Slate-600 (Darker text) */
+    border-color: #64748b;
+    /* Slate-500 (Darker border) */
+}
+
+.token-EAN {
+    background-color: #fef3c7;
+    /* Amber-100 */
+    color: #92400e;
+    /* Amber-800 */
+    border-color: #fde68a;
+    /* Amber-200 */
+}
+
+
+/* --- NEW TOKENS: JWT, GPS, PATH --- */
+.token-JWT {
+    background-color: #fffbeb;
+    /* Amber-50 (Security) */
+    color: #b45309;
+    /* Amber-700 */
+    border-color: #fcd34d;
+    /* Amber-300 */
+}
+
+/* Specific Icons via ::before pseudo-element if not handled by JS class mapping, 
+   but currently overlay.js adds class 'token-TYPE' and icon logic is usually in JS or CSS. 
+   Checking existing icon logic... content.js usually sets innerText with icon? 
+   No, content.js lines 1050+ uses getIconForType(). 
+   I need to update getIconForType() in content.js too! 
+   But user asked for "put in color with same category" here. */
+
+.token-GPS {
+    background-color: #fee2e2;
+    /* Red-100 (Location) */
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.token-PATH {
+    background-color: #cffafe;
+    /* Cyan-100 (Tech/URL) */
+    color: #0891b2;
+    border-color: #a5f3fc;
+}
+
+.token-AWS {
+    background-color: #fffbeb;
+    /* Amber-50 (Security/Key) */
+    color: #b45309;
+    border-color: #fcd34d;
+}
+
+.token-FAVORITE {
+    background-color: #fef08a;
+    color: #854d0e;
+    border-color: #fde047;
+}
+
+/* --- LEFT PANEL HIGHLIGHTS --- */
+#inputHighlights .token {
+    display: inline;
+    outline: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 0;
+    margin: 0;
+    pointer-events: auto !important;
+}
+
+#inputHighlights .token::before {
+    content: none !important;
+    display: none;
+}
+
+/* Custom Styles for Output vs Input */
+.output-div .token-CUSTOM {
+    border-style: dashed;
+}
+
+#inputHighlights .token {
+    /* ZERO LAYOUT IMPACT FIX */
+    /* Use outline (or box-shadow) instead of border to prevent text flow deviation */
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    outline-width: 1px;
+    outline-style: solid;
+    outline-offset: -1px;
+    /* Draws inward to match border look */
+    /* background-color: transparent; - REMOVED to show token colors */
+}
+
+/* Match Border Colors from Right Panel */
+#inputHighlights .token-NAME {
+    outline-color: #bae6fd;
+}
+
+#inputHighlights .token-LOC,
+#inputHighlights .token-POSTAL,
+#inputHighlights .token-CITY,
+#inputHighlights .token-COUNTRY {
+    outline-color: #fecaca;
+}
+
+#inputHighlights .token-ORG {
+    outline-color: #d8b4fe;
+}
+
+#inputHighlights .token-EMAIL {
+    outline-color: #fed7aa;
+}
+
+#inputHighlights .token-PHONE {
+    outline-color: #fdba74;
+}
+
+#inputHighlights .token-URL {
+    outline-color: #a5f3fc;
+}
+
+#inputHighlights .token-IBAN,
+#inputHighlights .token-BIC,
+#inputHighlights .token-VAT,
+#inputHighlights .token-VCS {
+    outline-color: #eab308;
+}
+
+#inputHighlights .token-MONEY {
+    outline-color: #6ee7b7;
+}
+
+#inputHighlights .token-CB,
+#inputHighlights .token-CVV,
+#inputHighlights .token-SSN {
+    outline-color: #fbcfe8;
+}
+
+#inputHighlights .token-CRYPTO {
+    outline-color: #ffedd5;
+}
+
+#inputHighlights .token-IP,
+#inputHighlights .token-MAC {
+    outline-color: #bae6fd;
+}
+
+#inputHighlights .token-ID,
+#inputHighlights .token-UUID,
+#inputHighlights .token-USERNAME,
+#inputHighlights .token-PASSPORT,
+#inputHighlights .token-PLATE,
+#inputHighlights .token-VIN {
+    outline-color: #c7d2fe;
+}
+
+#inputHighlights .token-DATE,
+#inputHighlights .token-TIME {
+    outline-color: #f0abfc;
+}
+
+#inputHighlights .token-PASS,
+#inputHighlights .token-KEY,
+#inputHighlights .token-SECRET,
+#inputHighlights .token-PIN,
+#inputHighlights .token-JWT,
+#inputHighlights .token-AWS {
+    outline-color: #fcd34d;
+}
+
+#inputHighlights .token-CUSTOM {
+    outline-style: dashed;
+    outline-color: #475569;
+}
+
+/* Favorite tokens use solid by default in both, but we can be explicit if needed */
+
+/* ========================================= */
+/* --- LOCKED (PREMIUM) TOKEN STYLE --- */
+/* ========================================= */
+#inputHighlights .token-locked {
+    position: relative;
+    /* ZERO LAYOUT IMPACT FIX */
+    border: none !important;
+    outline: 1px dashed #ef4444;
+    outline-offset: -1px;
+    background-color: rgba(254, 242, 242, 0.6);
+    color: inherit;
+    border-radius: 4px;
+    pointer-events: auto !important;
+}
+
+/* SELECTION FIX */
+#inputHighlights .token-locked:active,
+.is-selecting #inputHighlights .token-locked {
+    pointer-events: none !important;
+}
+
+/* ICON */
+#inputHighlights .token-locked .warning-icon {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    font-size: 16px;
+    line-height: 1;
+    color: #ef4444;
+    background: transparent;
+    width: auto;
+    height: auto;
+    z-index: 10;
+    filter: drop-shadow(0px 1px 1px white);
+    pointer-events: none;
+}
+
+/* --- FLOATING JS TOOLTIP --- */
+.premium-tooltip {
+    position: fixed;
+    display: none;
+    background: #1e293b;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 220px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 2147483647;
+    pointer-events: none;
+    transform: translate(15px, 15px);
+}
+
+/* LICENSE MODAL UPDATES */
+#licenseErrorArea {
+    transition: background-color 0.3s;
+}
+
+#btnResetDevices {
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#btnResetDevices:hover {
+    background: #fee2e2 !important;
+}
+
+#linkForgotKey:hover {
+    text-decoration: underline;
+}
+
+/* --- OUTPUT PANEL ICONS --- */
+.output-div .token {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 0 4px;
+    font-size: 0.9em;
+    margin: 0 1px;
+}
+
+.output-div .token-NAME::before {
+    content: "👤";
+    margin-right: 6px;
+}
+
+.output-div .token-LOC::before {
+    content: "📍";
+    margin-right: 6px;
+}
+
+.output-div .token-ORG::before {
+    content: "🏢";
+    margin-right: 6px;
+}
+
+.output-div .token-ADDRESS::before {
+    content: "🏠";
+    margin-right: 6px;
+}
+
+.output-div .token-POSTAL::before {
+    content: "📮";
+    margin-right: 6px;
+}
+
+.output-div .token-CITY::before {
+    content: "🏢";
+    margin-right: 6px;
+}
+
+
+.output-div .token-COUNTRY::before {
+    content: "🗺️";
+    margin-right: 6px;
+}
+
+.output-div .token-EMAIL::before {
+    content: "📧";
+    margin-right: 6px;
+}
+
+.output-div .token-PHONE::before {
+    content: "📞";
+    margin-right: 6px;
+}
+
+.output-div .token-URL::before {
+    content: "🔗";
+    margin-right: 6px;
+}
+
+.output-div .token-IBAN::before,
+.output-div .token-BANK_COMM::before {
+    content: "🏦";
+    margin-right: 6px;
+}
+
+.output-div .token-MONEY::before {
+    content: "💰";
+    margin-right: 6px;
+}
+
+.output-div .token-CB::before {
+    content: "💳";
+    margin-right: 6px;
+}
+
+.output-div .token-CVV::before {
+    content: "💳";
+    margin-right: 6px;
+}
+
+.output-div .token-CRYPTO::before {
+    content: "🪙";
+    margin-right: 6px;
+}
+
+.output-div .token-BIC::before {
+    content: "🏦";
+    margin-right: 6px;
+}
+
+.output-div .token-VAT::before {
+    content: "🧾";
+    margin-right: 6px;
+}
+
+.output-div .token-IP::before {
+    content: "🌐";
+    margin-right: 6px;
+}
+
+.output-div .token-MAC::before {
+    content: "💻";
+    margin-right: 6px;
+}
+
+.output-div .token-SSN::before {
+    content: "🔢";
+    margin-right: 6px;
+}
+
+.output-div .token-SECRET::before {
+    content: "🔒";
+    margin-right: 6px;
+}
+
+.output-div .token-PASS::before {
+    content: "✳️";
+    margin-right: 6px;
+}
+
+.output-div .token-KEY::before {
+    content: "🔑";
+    margin-right: 6px;
+}
+
+
+
+.output-div .token-PIN::before {
+    content: "🔐";
+    margin-right: 6px;
+}
+
+.output-div .token-JWT::before,
+.output-div .token-AWS::before {
+    content: "🔑";
+    margin-right: 6px;
+}
+
+.output-div .token-UUID::before,
+.output-div .token-ID::before {
+    content: "🏷️";
+    margin-right: 6px;
+}
+
+.output-div .token-VIN::before {
+    content: "🚗";
+    margin-right: 6px;
+}
+
+.output-div .token-USERNAME::before {
+    content: "🪪";
+    margin-right: 6px;
+}
+
+.output-div .token-PASSPORT::before {
+    content: "🛂";
+    margin-right: 6px;
+}
+
+.output-div .token-PLATE::before {
+    content: "🚗";
+    margin-right: 6px;
+}
+
+.output-div .token-VCS::before {
+    content: "🏦";
+    margin-right: 6px;
+}
+
+
+
+.output-div .token-DATE::before {
+    content: "📅";
+    margin-right: 6px;
+}
+
+.output-div .token-TIME::before {
+    content: "⏰";
+    margin-right: 6px;
+}
+
+.output-div .token-EAN::before {
+    content: "🏷️";
+    margin-right: 6px;
+}
+
+.output-div .token-CUSTOM::before {
+    content: "🛡️";
+    margin-right: 6px;
+}
+
+.output-div .token-JWT::before {
+    content: "🛡️";
+    margin-right: 6px;
+}
+
+.output-div .token-GPS::before {
+    content: "🧭";
+    margin-right: 6px;
+}
+
+.output-div .token-AWS::before {
+    content: "📦";
+    margin-right: 6px;
+}
+
+.output-div .token-PATH::before {
+    content: "📂";
+    margin-right: 6px;
+}
+
+.output-div .token-FAVORITE::before {
+    content: "⭐";
+    margin-right: 6px;
+}
+
+/* --- SCROLLBARS --- */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 transparent;
+}
+
+/* --- TOAST NOTIFICATIONS --- */
+#chatwall-toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.chatwall-toast {
+    background: #1e293b;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 300px;
+}
+
+.chatwall-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.chatwall-toast.toast-success {
+    border-left: 4px solid #22c55e;
+}
+
+.chatwall-toast.toast-error {
+    border-left: 4px solid #ef4444;
+}
+
+.chatwall-toast.toast-info {
+    border-left: 4px solid #3b82f6;
+}
+
+/* --- ACTIVE TOOL STYLES (Painter Mode) --- */
+#toolMask,
+#toolUnmask,
+#copyBtn {
+    border-radius: 6px;
+    /* Soft Squircle */
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    /* For badge positioning */
+    transition: all 0.1s ease-in-out;
+    color: #64748b;
+}
+
+#toolMask:hover,
+#toolUnmask:hover,
+#copyBtn:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+#toolMask.active,
+#toolUnmask.active {
+    background-color: #cbd5e1 !important;
+    border-color: #64748b !important;
+    color: #0f172a !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Painter Badge (SVG Brush) */
+#toolMask.active::after,
+#toolUnmask.active::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 14px;
+    height: 14px;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230f172a' stroke='none'%3E%3Cpath d='M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a.996.996 0 0 0-1.41 0L9 12.25 11.75 15l8.96-8.96a.996.996 0 0 0 0-1.41z'/%3E%3C/svg%3E");
+    background-size: 10px 10px;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Spinner Animation */
+@keyframes cw-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.cw-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #5a5a5a;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: cw-spin 1s linear infinite;
+    flex-shrink: 0;
+}
+
+/* --- DEANONYMIZE MODE OVERRIDES --- */
+.mode-deanonymize #btnAccount {
+    display: none !important;
+}

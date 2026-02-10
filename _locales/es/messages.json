@@ -1,0 +1,213 @@
+{
+    "appName": {
+        "message": "ChatWall: Cortafuegos IA"
+    },
+    "overlay_title": {
+        "message": "ChatWall: Cortafuegos IA"
+    },
+    "btn_upgrade": {
+        "message": "Mejorar a Premium"
+    },
+    "menu_license": {
+        "message": "GestiÃ³n de Licencias"
+    },
+    "menu_help": {
+        "message": "Ayuda"
+    },
+    "menu_privacy": {
+        "message": "Privacidad y Seguridad"
+    },
+    "menu_legal": {
+        "message": "Licencia"
+    },
+    "menu_terms": {
+        "message": "Términos de Servicio"
+    },
+    "menu_manage_sub": {
+        "message": "Cuenta"
+    },
+    "menu_about": {
+        "message": "Sobre ChatWall"
+    },
+    "panel_original_prompt": {
+        "message": "Prompt Original (Escribe aquÃ­)"
+    },
+    "placeholder_prompt": {
+        "message": "Escribe o pega tu prompt aquÃ­..."
+    },
+    "panel_anonymized": {
+        "message": "Anonimizado (Se enviarÃ¡ a la IA)"
+    },
+    "title_anonymize_mode": {
+        "message": "Chatea con IA. Mantén tus datos privados"
+    },
+    "title_deanonymize_mode": {
+        "message": "Contenido Desanonimizado"
+    },
+    "panel_original_preview": {
+        "message": "Contenido Original (Vista Previa)"
+    },
+    "btn_send": {
+        "message": "Enviar al prompt de IA"
+    },
+    "btn_cancel": {
+        "message": "Cancelar"
+    },
+    "btn_copy": {
+        "message": "Copiar Contenido"
+    },
+    "plan_label": {
+        "message": "Plan:"
+    },
+    "ctx_copy": {
+        "message": "Copiar"
+    },
+    "ctx_read_docs": {
+        "message": "Leer documentación"
+    },
+    "ctx_paste": {
+        "message": "Pegar"
+    },
+    "ctx_cut": {
+        "message": "Cortar"
+    },
+    "ctx_select_all": {
+        "message": "Seleccionar todo"
+    },
+    "ctx_mask": {
+        "message": "Ocultar Selección"
+    },
+    "ctx_unmask": {
+        "message": "Mostrar Selección"
+    },
+    "help_custom_tool_mask": {
+        "message": "Ocultar"
+    },
+    "help_custom_tool_unmask": {
+        "message": "Mostrar"
+    },
+    "ctx_add_fav": {
+        "message": "Añadir a Favoritos"
+    },
+    "ctx_rem_fav": {
+        "message": "Eliminar Favorito"
+    },
+    "ctx_premium_tag": {
+        "message": "(Premium)"
+    },
+    "rc_unmask_preview": {
+        "message": "Mostrar (Vista Previa)"
+    },
+    "rc_unmask_copy": {
+        "message": "Mostrar y Copiar"
+    },
+    "toast_copied": {
+        "message": "¡Copiado al portapapeles!"
+    },
+    "toast_masked_copied": {
+        "message": "¡Contenido enmascarado copiado al portapapeles!"
+    },
+    "tooltip_sensitive_data": {
+        "message": "¡Datos Sensibles Detectados!"
+    },
+    "tooltip_mask_action": {
+        "message": "Haga clic para proteger y ocultar su prompt"
+    },
+    "tooltip_use_chatwall": {
+        "message": "Haga clic para proteger y ocultar estos datos antes de enviar."
+    },
+    "tooltip_response_done": {
+        "message": "Respuesta Completada"
+    },
+    "tooltip_click_unmask": {
+        "message": "Clic para desocultar y ver contenido.<br>o <b>Clic Derecho</b> (Selección o Icono Copiar)"
+    },
+    "license_settings": {
+        "message": "Configuración de Licencia"
+    },
+    "lbl_email": {
+        "message": "Email de Cuenta"
+    },
+    "lbl_key": {
+        "message": "Clave de Licencia"
+    },
+    "link_forgot": {
+        "message": "¿Olvidaste la clave?"
+    },
+    "link_get_license": {
+        "message": "Obtener licencia"
+    },
+    "btn_reset": {
+        "message": "Restablecer Dispositivos"
+    },
+    "btn_manage": {
+        "message": "Administrar cuenta"
+    },
+    "btn_close": {
+        "message": "Cerrar"
+    },
+    "btn_activate": {
+        "message": "Activar"
+    },
+    "popup_masked_warn_title": {
+        "message": "Contenido Oculto Detectado"
+    },
+    "popup_masked_warn_msg": {
+        "message": "Para enviar, haga clic en <b>Enviar</b> y use el botón <b>Enviar</b> del chat.<br>¿Desea enviar al chat o reeditar?"
+    },
+    "btn_edit_prompt": {
+        "message": "Reeditar"
+    },
+    "btn_popup_send_action": {
+        "message": "Enviar"
+    },
+    "tooltip_premium_reserved": {
+        "message": "Este contenido está reservado para usuarios Premium. Actualice para ocultar automáticamente. Puede ocultarlo manualmente usando clic derecho o iconos de máscara."
+    },
+    "tooltip_premium_reserved_safe": {
+        "message": "Este contenido está reservado para usuarios Premium. (Inicio de sesión requerido). Puede ocultarlo manualmente usando clic derecho o iconos de máscara."
+    },
+    "license_msg_fill_required": {
+        "message": "Por favor, complete Email y Clave de Licencia."
+    },
+    "license_msg_verifying": {
+        "message": "Verificando con el servidor..."
+    },
+    "license_msg_success": {
+        "message": "¡Éxito! Plan: $PLAN$",
+        "placeholders": {
+            "plan": {
+                "content": "$1"
+            }
+        }
+    },
+    "license_msg_limit_reached": {
+        "message": "⚠️ $MESSAGE$<br><br>Por favor <a href='$LINK_UPGRADE$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>mejore su plan</a> o <a href='$LINK_RESET$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>restablezca dispositivos en el panel</a>.",
+        "placeholders": {
+            "message": {
+                "content": "$1"
+            },
+            "link_upgrade": {
+                "content": "$2"
+            },
+            "link_reset": {
+                "content": "$3"
+            }
+        }
+    },
+    "license_msg_network_error": {
+        "message": "Conexión de red fallida. Por favor reintente y verifique su conexión a internet.<br>Si el problema persiste, contacte a support@chatwall.io"
+    },
+    "license_button_reset_warning": {
+        "message": "Advertencia: Esto desconectará todos los demás dispositivos usando esta licencia. ¿Continuar?"
+    },
+    "license_button_resetting": {
+        "message": "Restableciendo..."
+    },
+    "license_button_reset_default": {
+        "message": "⚠️ Restablecer Dispositivos Activos"
+    },
+    "toast_unmasked_copied": {
+        "message": "Contenido desenmascarado copiado al portapapeles"
+    }
+}

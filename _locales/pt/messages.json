@@ -1,0 +1,213 @@
+{
+    "appName": {
+        "message": "ChatWall: Firewall IA"
+    },
+    "overlay_title": {
+        "message": "ChatWall: Firewall IA"
+    },
+    "btn_upgrade": {
+        "message": "Mudar para Premium"
+    },
+    "menu_license": {
+        "message": "Gerenciar Licença"
+    },
+    "menu_help": {
+        "message": "Ajuda"
+    },
+    "menu_privacy": {
+        "message": "Privacidade & Segurança"
+    },
+    "menu_legal": {
+        "message": "Licença"
+    },
+    "menu_terms": {
+        "message": "Termos de Serviço"
+    },
+    "menu_manage_sub": {
+        "message": "Conta"
+    },
+    "menu_about": {
+        "message": "Sobre o ChatWall"
+    },
+    "panel_original_prompt": {
+        "message": "Prompt Original (Escreva aqui)"
+    },
+    "placeholder_prompt": {
+        "message": "Digite ou cole seu prompt aqui..."
+    },
+    "panel_anonymized": {
+        "message": "Anonimizado (Será enviado à IA)"
+    },
+    "title_anonymize_mode": {
+        "message": "Converse com IA. Mantenha os dados privados"
+    },
+    "title_deanonymize_mode": {
+        "message": "Conteúdo Desanonimizado"
+    },
+    "panel_original_preview": {
+        "message": "Conteúdo Original (Pré-visualização)"
+    },
+    "btn_send": {
+        "message": "Enviar para o prompt da IA"
+    },
+    "btn_cancel": {
+        "message": "Cancelar"
+    },
+    "btn_copy": {
+        "message": "Copiar Conteúdo"
+    },
+    "plan_label": {
+        "message": "Plano:"
+    },
+    "ctx_copy": {
+        "message": "Copiar"
+    },
+    "ctx_read_docs": {
+        "message": "Ler Documentação"
+    },
+    "ctx_paste": {
+        "message": "Colar"
+    },
+    "ctx_cut": {
+        "message": "Cortar"
+    },
+    "ctx_select_all": {
+        "message": "Selecionar Tudo"
+    },
+    "ctx_mask": {
+        "message": "Mascarar"
+    },
+    "ctx_unmask": {
+        "message": "Desmascarar"
+    },
+    "help_custom_tool_mask": {
+        "message": "Mascarar"
+    },
+    "help_custom_tool_unmask": {
+        "message": "Desmascarar"
+    },
+    "ctx_add_fav": {
+        "message": "Adicionar aos Favoritos"
+    },
+    "ctx_rem_fav": {
+        "message": "Remover Favorito"
+    },
+    "ctx_premium_tag": {
+        "message": "(Premium)"
+    },
+    "rc_unmask_preview": {
+        "message": "Desmascarar (Visualizar)"
+    },
+    "rc_unmask_copy": {
+        "message": "Desmascarar & Copiar"
+    },
+    "toast_copied": {
+        "message": "Copiado para a área de transferência!"
+    },
+    "toast_masked_copied": {
+        "message": "Conteúdo mascarado copiado para a área de transferência!"
+    },
+    "tooltip_sensitive_data": {
+        "message": "Dados Sensíveis Detectados!"
+    },
+    "tooltip_mask_action": {
+        "message": "Clique para proteger e mascarar seu prompt"
+    },
+    "tooltip_use_chatwall": {
+        "message": "Clique para proteger e mascarar estes dados antes de enviar."
+    },
+    "tooltip_response_done": {
+        "message": "Resposta Completa"
+    },
+    "tooltip_click_unmask": {
+        "message": "Clique para desmascarar e ver conteúdo.<br>ou <b>Clique Direito</b> (Seleção ou Ícone Copiar)"
+    },
+    "license_settings": {
+        "message": "Configurações de Licença"
+    },
+    "lbl_email": {
+        "message": "Email da Conta"
+    },
+    "lbl_key": {
+        "message": "Chave de Licença"
+    },
+    "link_forgot": {
+        "message": "Esqueceu a chave?"
+    },
+    "link_get_license": {
+        "message": "Obter licença"
+    },
+    "btn_reset": {
+        "message": "Redefinir Dispositivos"
+    },
+    "btn_manage": {
+        "message": "Gerenciar conta"
+    },
+    "btn_close": {
+        "message": "Fechar"
+    },
+    "btn_activate": {
+        "message": "Ativar"
+    },
+    "popup_masked_warn_title": {
+        "message": "Conteúdo Mascarado Detectado"
+    },
+    "popup_masked_warn_msg": {
+        "message": "Para enviar, clique em <b>Enviar</b> e use o botão <b>Enviar</b> do chat.<br>Deseja enviar ou reeditar?"
+    },
+    "btn_edit_prompt": {
+        "message": "Reeditar"
+    },
+    "btn_popup_send_action": {
+        "message": "Enviar"
+    },
+    "tooltip_premium_reserved": {
+        "message": "Este conteúdo é reservado para usuários Premium. Atualize para mascarar automaticamente. Você pode mascarar manualmente usando clique direito ou ícones de máscara."
+    },
+    "tooltip_premium_reserved_safe": {
+        "message": "Este conteúdo é reservado para usuários Premium. (Login necessário). Você pode mascarar manualmente usando clique direito ou ícones de máscara."
+    },
+    "license_msg_fill_required": {
+        "message": "Por favor, preencha o Email e a Chave de Licença."
+    },
+    "license_msg_verifying": {
+        "message": "Verificando com o servidor..."
+    },
+    "license_msg_success": {
+        "message": "Sucesso! Plano: $PLAN$",
+        "placeholders": {
+            "plan": {
+                "content": "$1"
+            }
+        }
+    },
+    "license_msg_limit_reached": {
+        "message": "⚠️ $MESSAGE$<br><br>Por favor <a href='$LINK_UPGRADE$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>atualize o plano</a> ou <a href='$LINK_RESET$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>redefina dispositivos no painel</a>.",
+        "placeholders": {
+            "message": {
+                "content": "$1"
+            },
+            "link_upgrade": {
+                "content": "$2"
+            },
+            "link_reset": {
+                "content": "$3"
+            }
+        }
+    },
+    "license_msg_network_error": {
+        "message": "Falha na conexão de rede. Por favor, tente novamente e verifique sua internet.<br>Se o problema persistir, contate support@chatwall.io"
+    },
+    "license_button_reset_warning": {
+        "message": "Aviso: Isso desconectará todos os outros dispositivos usando esta licença. Continuar?"
+    },
+    "license_button_resetting": {
+        "message": "Redefinindo..."
+    },
+    "license_button_reset_default": {
+        "message": "⚠️ Redefinir Dispositivos Ativos"
+    },
+    "toast_unmasked_copied": {
+        "message": "Conteúdo desmascarado copiado para a área de transferência"
+    }
+}

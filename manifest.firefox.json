@@ -1,0 +1,153 @@
+{
+    "manifest_version": 3,
+    "name": "ChatWall",
+    "version": "1.7",
+    "default_locale": "en",
+    "description": "Chat with AI. Keep Data Private. The AI Privacy Firewall.",
+    "icons": {
+        "16": "logo.png",
+        "48": "logo.png",
+        "128": "logo.png"
+    },
+    "action": {
+        "default_title": "ChatWall",
+        "default_icon": "logo.png"
+    },
+    "permissions": [
+        "contextMenus",
+        "clipboardRead",
+        "clipboardWrite",
+        "activeTab",
+        "storage",
+        "alarms"
+    ],
+    "host_permissions": [
+        "http://localhost:3000/api/verify-license"
+    ],
+    "background": {
+        "scripts": [
+            "config.js",
+            "detectors/_data/first_names_data.js",
+            "detectors/_data/last_names_data.js",
+            "detectors/_data/common_names_data.js",
+            "detectors/_data/common_cities_data.js",
+            "detectors/_data/cities_data.js",
+            "detectors/_data/country.js",
+            "detectors/detector.js",
+            "detectors/email.js",
+            "detectors/net/url.js",
+            "detectors/net/ip.js",
+            "detectors/net/mac.js",
+            "detectors/net/path.js",
+            "detectors/bank/amount.js",
+            "detectors/bank/iban.js",
+            "detectors/bank/cb.js",
+            "detectors/bank/crypto.js",
+            "detectors/secret/pin.js",
+            "detectors/secret/pass.js",
+            "detectors/secret/key.js",
+            "detectors/secret/jwt.js",
+            "detectors/bank/cvv.js",
+            "detectors/secret/secret.js",
+            "detectors/net/uuid.js",
+            "detectors/id/passport.js",
+            "detectors/id/plate.js",
+            "detectors/id/ssn.js",
+            "detectors/id/vat.js",
+            "detectors/bank/bic.js",
+            "detectors/bank/vcs.js",
+            "detectors/id/id.js",
+            "detectors/id/vin.js",
+            "detectors/geo/city.js",
+            "detectors/geo/country.js",
+            "detectors/geo/gps.js",
+            "detectors/geo/postal.js",
+            "detectors/datetime/date.js",
+            "detectors/datetime/time.js",
+            "detectors/name.js",
+            "detectors/phone.js",
+            "background.js"
+        ]
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "info@chatwall.io",
+            "data_collection_permissions": {
+                "required": [
+                    "none"
+                ]
+            }
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://chatgpt.com/*",
+                "*://chat.openai.com/*",
+                "*://gemini.google.com/*",
+                "*://claude.ai/*",
+                "*://grok.com/*",
+                "*://x.com/i/grok*",
+                "*://copilot.microsoft.com/*",
+                "*://chat.deepseek.com/*"
+            ],
+            "js": [
+                "config.js",
+                "detectors/detector.js",
+                "detectors/_data/common_names_data.js",
+                "detectors/_data/first_names_data.js",
+                "detectors/_data/last_names_data.js",
+                "detectors/_data/common_cities_data.js",
+                "detectors/_data/cities_data.js",
+                "detectors/_data/country.js",
+                "detectors/bank/amount.js",
+                "detectors/bank/bic.js",
+                "detectors/bank/cb.js",
+                "detectors/geo/city.js",
+                "detectors/geo/country.js",
+                "detectors/geo/gps.js",
+                "detectors/bank/crypto.js",
+                "detectors/bank/cvv.js",
+                "detectors/datetime/date.js",
+                "detectors/email.js",
+                "detectors/bank/iban.js",
+                "detectors/id/id.js",
+                "detectors/net/ip.js",
+                "detectors/secret/jwt.js",
+                "detectors/secret/key.js",
+                "detectors/net/mac.js",
+                "detectors/net/path.js",
+                "detectors/name.js",
+                "detectors/secret/pass.js",
+                "detectors/id/passport.js",
+                "detectors/id/plate.js",
+                "detectors/phone.js",
+                "detectors/secret/pin.js",
+                "detectors/geo/postal.js",
+                "detectors/secret/secret.js",
+                "detectors/id/ssn.js",
+                "detectors/datetime/time.js",
+                "detectors/net/url.js",
+                "detectors/net/uuid.js",
+                "detectors/id/vat.js",
+                "detectors/id/vin.js",
+                "detectors/bank/vcs.js",
+                "content.js"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "overlay.html",
+                "overlay.css",
+                "logo.png",
+                "logo_t.png",
+                "License.txt"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}

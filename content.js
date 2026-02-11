@@ -16,6 +16,7 @@ let shadowRoot = null;
 let isStorageLoaded = false;
 
 const NLP_CONTEXT_WINDOW = 50000;
+const NLP_SCROLL_CONTEXT = 8000; // Smaller window for scroll-triggered scans (fast, matches accumulate)
 
 const ENTITY_TIERS = {
     FREE: new Set([
@@ -49,7 +50,16 @@ let initialCounters = {}; // Tracks counter state when overlay opened
 let lastRightClickedElement = null;
 let activeTarget = null;
 let currentMatches = [];
+let cachedLockedTokens = null; // Locked Tokens Cache (per overlay session)
 let cachedTokenPairs = []; // For Scroll Sync Optimization
+
+// Cached Overlay DOM Elements (populated once in initOverlayEvents)
+let elInputText = null;
+let elOutputText = null;
+let elInputHighlights = null;
+let lastRenderFingerprint = ""; // Skip re-render if matches unchanged
+let cachedLocalMatches = null; // Cached local regex results (manualBlockList + favoritesList)
+let cachedLocalMatchesTextKey = ""; // Text identity key for local match cache
 let scrollTimer = null;
 let contextMenuTargetMatch = null;
 let activeTool = null;
@@ -454,11 +464,9 @@ const getLockedTokens = () => {
 
     // 2. Subtract occurrences in Overlay (Shadow DOM)
     if (shadowRoot) {
-        const inp = shadowRoot.getElementById('inputText');
-        if (inp) substractTokens(inp.value, "Overlay.Input");
+        if (elInputText) substractTokens(elInputText.value, "Overlay.Input");
 
-        const out = shadowRoot.getElementById('outputText');
-        if (out) substractTokens(out.innerText, "Overlay.Output");
+        if (elOutputText) substractTokens(elOutputText.innerText, "Overlay.Output");
     }
 
     // Any token with count > 0 is present OUTSIDE of the active draft logic -> Locked
@@ -476,15 +484,15 @@ const getLockedTokens = () => {
 async function processText(forceFullScan = false, fromScroll = false, customContextSize = null) {
     if (!shadowRoot) return;
 
-    const inputText = shadowRoot.getElementById('inputText');
-    if (!inputText) return;
+    if (!elInputText) return;
+    const inputText = elInputText;
 
     const currentScanId = ++lastScanId; // Race Condition Guard
     const rawText = inputText.value;
     let textToScan = rawText;
     let offset = 0;
 
-    const contextSize = customContextSize || NLP_CONTEXT_WINDOW;
+    const contextSize = customContextSize || (fromScroll ? NLP_SCROLL_CONTEXT : NLP_CONTEXT_WINDOW);
 
     if (!forceFullScan && rawText.length > contextSize * 2) {
         let centerIndex = inputText.selectionEnd || 0;
@@ -526,7 +534,7 @@ async function processText(forceFullScan = false, fromScroll = false, customCont
     }
 }
 
-async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, scanId = 0) {
+async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, scanId = 0, skipLocalRegex = false) {
     if (!shadowRoot) return;
 
     // Race Condition Guard: If a newer scan has already started, discard this stale result.
@@ -535,16 +543,20 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
     }
 
     try {
-        const inputText = shadowRoot.getElementById('inputText');
-        const outputText = shadowRoot.getElementById('outputText');
-        const inputHighlights = shadowRoot.getElementById('inputHighlights');
+        const inputText = elInputText;
+        const outputText = elOutputText;
+        const inputHighlights = elInputHighlights;
         if (!inputText || !outputText) return;
 
         // Fetch tokens for finalization phase
         const tokenMap = await getTokenMap();
         let mapModified = false;
 
-        const lockedTokens = getLockedTokens();
+        // Use cached locked tokens (computed once per overlay session) to avoid expensive document.body.innerText reflow
+        if (!cachedLockedTokens) {
+            cachedLockedTokens = getLockedTokens();
+        }
+        const lockedTokens = cachedLockedTokens;
 
         const rawText = inputText.value;
         let allMatches = [];
@@ -585,26 +597,76 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
         allMatches = [...cachedNlpMatches];
 
 
-        manualBlockList.forEach(word => {
-            if (ignoredEntities.has(word)) return;
-            const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-            allMatches = allMatches.concat(findAllMatches(rawText, regex, 'CUSTOM'));
-        });
+        // --- LOCAL REGEX MATCHES (cached by text content to skip on scroll) ---
+        // Key: text length + first/last 100 chars (fast identity check)
+        const textKey = rawText.length + ':' + rawText.substring(0, 100) + ':' + rawText.substring(rawText.length - 100);
+        let localMatches;
 
-        // Favorites List Matches
-        favoritesList.forEach(fav => {
-            if (ignoredEntities.has(fav)) return;
-            const regex = new RegExp(fav.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-            allMatches = allMatches.concat(findAllMatches(rawText, regex, 'FAVORITE'));
-        });
+        if (skipLocalRegex && cachedLocalMatches) {
+            // Optimistic render (per-keystroke) — reuse stale cache, debounced processText will refresh
+            localMatches = cachedLocalMatches;
+        } else if (textKey === cachedLocalMatchesTextKey && cachedLocalMatches) {
+            // Text unchanged (scroll-only) — reuse cached local regex results
+            localMatches = cachedLocalMatches;
+        } else {
+            // Text changed — recompute local regex matches
+            localMatches = [];
+
+            manualBlockList.forEach(word => {
+                if (ignoredEntities.has(word)) return;
+                const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                localMatches = localMatches.concat(findAllMatches(rawText, regex, 'CUSTOM'));
+            });
+
+            // Favorites List Matches
+            favoritesList.forEach(fav => {
+                if (ignoredEntities.has(fav)) return;
+                const regex = new RegExp(fav.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                localMatches = localMatches.concat(findAllMatches(rawText, regex, 'FAVORITE'));
+            });
+
+            cachedLocalMatches = localMatches;
+            cachedLocalMatchesTextKey = textKey;
+        }
+
+        allMatches = allMatches.concat(localMatches);
 
         allMatches.forEach(m => {
             if (m.type === 'UUID') m.type = 'ID';
         });
 
-        // Unified Scoring Logic
+        // --- CONTEXTUAL NAME BOOST ---
+        // If a NAME match has an honorific prefix or an adjacent NAME match,
+        // boost its priority above CITY (85 > 84) so names are preferred over cities in context.
+        const NAME_PREFIX_RE = /(?:Mister|Miss(?:es)?|Mrs?\.?|Ms\.?|Mx\.?|Doctor|Dr\.?|Professor|Prof\.?|Sir|Madam|Dame|Lord|Lady|Monsieur|Madame|Mademoiselle|Mme\.?|Mlle\.?|M\.?|Docteur|Professeur|Mai?tre|Maître|Mgr|Monseigneur|Veuve|Herr|Frau|Doktor|Señor|Señora|Señorita|Don|Doña|Sr\.?|Sra\.?|Srta\.?|Signore?|Signora|Signorina|Sig\.?|Dottore|Dottoressa|Dott\.?|Senhor|Senhora|Senhorita|Dom|Dona|Meneer|Mevrouw|Juffrouw|Dhr\.?|Mevr\.?|Sheikh|Abu|Umm)\s*$/i;
+
+        allMatches.forEach(m => {
+            if (m.type !== 'NAME') return;
+            // Check 1: Honorific prefix in the text before this match
+            const prefixWindow = rawText.substring(Math.max(0, m.start - 20), m.start);
+            if (NAME_PREFIX_RE.test(prefixWindow)) {
+                m.hasNameContext = true;
+                return;
+            }
+            // Check 2: Adjacent NAME match (immediately before or after, allowing spaces)
+            for (const other of allMatches) {
+                if (other === m || other.type !== 'NAME') continue;
+                // other ends near m.start (adjacent before)
+                if (other.end >= m.start - 2 && other.end <= m.start) {
+                    m.hasNameContext = true;
+                    return;
+                }
+                // other starts near m.end (adjacent after)
+                if (other.start >= m.end && other.start <= m.end + 2) {
+                    m.hasNameContext = true;
+                    return;
+                }
+            }
+        });
+
         // Unified Scoring Logic (Synced with background.js)
-        const getScore = (t) => {
+        const getScore = (m) => {
+            const t = (typeof m === 'string') ? m : m.type;
             if (t === 'FAVORITE') return 130;
             if (t === 'CUSTOM') return 129;
 
@@ -623,7 +685,7 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
             if (t === 'GPS') return 87; // GPS > Phone (85)
             if (t === 'DATE') return 86; // Date > Phone (85)
             if (t === 'PHONE') return 85;
-            if (t === 'NAME') return 80; // Name < City
+            if (t === 'NAME') return (m && m.hasNameContext) ? 85 : 80;
             if (t === 'PERSON') return 80; // legacy fallback
 
             if (t === 'COUNTRY') return 89; // Country > City
@@ -643,8 +705,8 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
         allMatches.sort((a, b) => {
             if (a.start !== b.start) return a.start - b.start;
             // Higher score first
-            const scoreA = getScore(a.type);
-            const scoreB = getScore(b.type);
+            const scoreA = getScore(a);
+            const scoreB = getScore(b);
             if (scoreA !== scoreB) return scoreB - scoreA;
             return b.end - a.end;
         });
@@ -661,7 +723,7 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
                 let prev = filteredMatches[filteredMatches.length - 1];
 
                 // Use scoring to decide whether to replace an existing overlapping match.
-                if (getScore(m.type) > getScore(prev.type)) {
+                if (getScore(m) > getScore(prev)) {
                     if (m.start < prev.end) {
                         filteredMatches.pop();
                         filteredMatches.push(m);
@@ -687,28 +749,50 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
             }
         });
 
-        let safeHtml = "";
-        let highlightHtml = "";
+        // --- FINGERPRINT: Skip expensive re-render if matches unchanged ---
+        const fingerprint = filteredMatches.length + ':' + rawText.length + ':' +
+            filteredMatches.map(m => m.start + ',' + m.end + ',' + m.type + ',' + (m.isIgnored ? 'i' : '')).join(';');
+
+        if (fingerprint === lastRenderFingerprint) {
+            // Matches unchanged — skip innerHTML rebuild and token pair cache rebuild
+            return;
+        }
+        lastRenderFingerprint = fingerprint;
+
+        // --- DOM RENDER: DocumentFragment (avoids innerHTML HTML parsing overhead) ---
+        const safeFrag = document.createDocumentFragment();
+        const hlFrag = document.createDocumentFragment();
         let usedTokenKeys = new Set(); // Garbage Collection
-        const currentTexts = new Set(filteredMatches.map(m => m.text));
+        const newTokenPairs = []; // Collect during build instead of querySelectorAll
         let currentIndex = 0;
 
         filteredMatches.forEach(m => {
-            const rawSegment = rawText.substring(currentIndex, m.start);
-            safeHtml += escapeHtml(rawSegment);
-            highlightHtml += escapeHtml(rawSegment);
+            // Text before this match
+            if (m.start > currentIndex) {
+                const seg = rawText.substring(currentIndex, m.start);
+                safeFrag.appendChild(document.createTextNode(seg));
+                hlFrag.appendChild(document.createTextNode(seg));
+            }
 
             if (m.isIgnored) {
-                safeHtml += escapeHtml(m.text);
-                highlightHtml += escapeHtml(m.text);
+                safeFrag.appendChild(document.createTextNode(m.text));
+                hlFrag.appendChild(document.createTextNode(m.text));
             }
             else if (m.isLocked) {
-                safeHtml += escapeHtml(m.text);
+                safeFrag.appendChild(document.createTextNode(m.text));
                 const hidePayment = (typeof ChatWallConfig !== 'undefined' && ChatWallConfig.HIDE_PAYMENT_LINKS);
                 const tooltipText = hidePayment
                     ? chrome.i18n.getMessage('tooltip_premium_reserved_safe')
                     : chrome.i18n.getMessage('tooltip_premium_reserved');
-                highlightHtml += `<span class="token token-locked" data-tooltip-text="${escapeHtml(tooltipText)}"><span class="warning-icon">⚠️</span>${escapeHtml(m.text)}</span>`;
+                const span = document.createElement('span');
+                span.className = 'token token-locked';
+                span.setAttribute('data-tooltip-text', tooltipText);
+                const warn = document.createElement('span');
+                warn.className = 'warning-icon';
+                warn.textContent = '⚠️';
+                span.appendChild(warn);
+                span.appendChild(document.createTextNode(m.text));
+                hlFrag.appendChild(span);
             }
             else {
                 let tokenKey;
@@ -753,21 +837,54 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
                 // Track usage for Garbage Collection
                 usedTokenKeys.add(tokenKey);
 
-                safeHtml += `<span class="token token-${m.type}" data-start="${m.start}" title="${escapeHtml(m.text)}">${tokenKey}</span>`;
-                const nlpFlag = m.isNLP ? "true" : "false";
-                highlightHtml += `<span class="token token-${m.type}" data-start="${m.start}" data-is-nlp="${nlpFlag}" data-type="${m.type}" data-text="${escapeHtml(m.text)}">${escapeHtml(m.text)}</span>`;
+                // Output token span
+                const safeSpan = document.createElement('span');
+                safeSpan.className = `token token-${m.type}`;
+                safeSpan.setAttribute('data-start', m.start);
+                safeSpan.title = m.text;
+                safeSpan.textContent = tokenKey;
+                safeFrag.appendChild(safeSpan);
+
+                // Highlight token span
+                const hlSpan = document.createElement('span');
+                hlSpan.className = `token token-${m.type}`;
+                hlSpan.setAttribute('data-start', m.start);
+                hlSpan.setAttribute('data-is-nlp', m.isNLP ? 'true' : 'false');
+                hlSpan.setAttribute('data-type', m.type);
+                hlSpan.setAttribute('data-text', m.text);
+                hlSpan.textContent = m.text;
+                hlFrag.appendChild(hlSpan);
+
+                // Collect token pair reference (replaces post-render querySelectorAll)
+                newTokenPairs.push({ start: m.start, input: hlSpan, output: safeSpan });
             }
             currentIndex = m.end;
         });
 
-        safeHtml += escapeHtml(rawText.substring(currentIndex));
-        highlightHtml += escapeHtml(rawText.substring(currentIndex));
+        // Remaining text after last match
+        if (currentIndex < rawText.length) {
+            const remaining = rawText.substring(currentIndex);
+            safeFrag.appendChild(document.createTextNode(remaining));
+            hlFrag.appendChild(document.createTextNode(remaining));
+        }
 
-        if (rawText.endsWith('\n')) highlightHtml += '<br>&nbsp;';
-        else if (rawText.endsWith('\n\n')) highlightHtml += '<br><br>&nbsp;';
+        // Handle trailing newlines for highlight layer
+        if (rawText.endsWith('\n\n')) {
+            hlFrag.appendChild(document.createElement('br'));
+            hlFrag.appendChild(document.createElement('br'));
+            hlFrag.appendChild(document.createTextNode('\u00a0'));
+        } else if (rawText.endsWith('\n')) {
+            hlFrag.appendChild(document.createElement('br'));
+            hlFrag.appendChild(document.createTextNode('\u00a0'));
+        }
 
-        outputText.innerHTML = safeHtml;
-        if (inputHighlights) inputHighlights.innerHTML = highlightHtml;
+        // Single DOM update: clear + append (one reflow each)
+        outputText.textContent = '';
+        outputText.appendChild(safeFrag);
+        if (inputHighlights) {
+            inputHighlights.textContent = '';
+            inputHighlights.appendChild(hlFrag);
+        }
 
         // FIX: Force Re-Sync Scroll (fixes paste/replace desync)
         if (inputText && inputHighlights) {
@@ -775,30 +892,9 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
             inputHighlights.scrollLeft = inputText.scrollLeft;
         }
 
-        // --- POPULATE SCROLL SYNC CACHE ---
-        cachedTokenPairs = [];
-        if (inputHighlights && outputText) {
-            const inTokens = Array.from(inputHighlights.querySelectorAll('.token[data-start]'));
-            const outTokens = Array.from(outputText.querySelectorAll('.token[data-start]'));
-
-            // Map by start index for O(1) matching
-            const outMap = new Map();
-            outTokens.forEach(t => outMap.set(t.getAttribute('data-start'), t));
-
-            inTokens.forEach(inT => {
-                const s = inT.getAttribute('data-start');
-                const outT = outMap.get(s);
-                if (outT) {
-                    cachedTokenPairs.push({
-                        start: parseInt(s, 10),
-                        input: inT,
-                        output: outT
-                    });
-                }
-            });
-            // Sort by start index (usually correlates with offsetTop)
-            cachedTokenPairs.sort((a, b) => a.start - b.start);
-        } // -------------------------------
+        // --- SCROLL SYNC CACHE (collected during build, no querySelectorAll needed) ---
+        cachedTokenPairs = newTokenPairs;
+        // Already in document order (sorted by start) since we iterated filteredMatches in order
 
 
         // GC REMOVED: To ensure stability (e.g., pasting same text in new overlay returns same token),
@@ -858,7 +954,59 @@ function handleOptimisticInput(inputText) {
 
     cachedNlpMatches = shiftedMatches;
 
-    // Synchronous Render (Optimistic)
+    // PERF: For large texts, skip the expensive synchronous DOM rebuild.
+    // Instead, surgically splice the delta into the highlight layer's DOM.
+    // This preserves existing token spans and their colors.
+    if (newText.length > 20000 && elInputHighlights) {
+        // Splice the edit into the highlight layer DOM
+        const insertText = delta > 0 ? newText.substring(startDiff, startDiff + delta) : '';
+        const deleteCount = delta < 0 ? -delta : 0;
+        let charPos = 0;
+        let spliced = false;
+
+        const spliceNode = (nodes) => {
+            for (const node of nodes) {
+                if (spliced) return;
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const len = node.textContent.length;
+                    if (charPos + len >= startDiff) {
+                        const offset = startDiff - charPos;
+                        const t = node.textContent;
+                        node.textContent = t.substring(0, offset) + insertText + t.substring(offset + deleteCount);
+                        spliced = true;
+                        return;
+                    }
+                    charPos += len;
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    const len = node.textContent.length;
+                    if (charPos + len > startDiff) {
+                        // Edit is inside this element — recurse into its children
+                        spliceNode(node.childNodes);
+                        return;
+                    }
+                    charPos += len;
+                }
+            }
+        };
+        spliceNode(elInputHighlights.childNodes);
+
+        if (!spliced) {
+            // Edit at the very end — append to last text node or create one
+            const last = elInputHighlights.lastChild;
+            if (last && last.nodeType === Node.TEXT_NODE) {
+                last.textContent += insertText;
+            } else {
+                elInputHighlights.appendChild(document.createTextNode(insertText));
+            }
+        }
+
+        elInputHighlights.scrollTop = inputText.scrollTop;
+        elInputHighlights.scrollLeft = inputText.scrollLeft;
+        return;
+    }
+
+    // For small texts: full synchronous optimistic render (instant feedback)
+    // Local regex re-runs fresh (fast for small texts, ensures correct positions)
     // Pass 0 as scanId to bypass race condition guard (we want to force this sync update)
     finalizeProcessing(shiftedMatches, 0, 0, 0);
 }
@@ -872,9 +1020,10 @@ function handleMaskAction(text) {
     text = text.trim();
     if (ignoredEntities.has(text)) ignoredEntities.delete(text);
     if (!manualBlockList.includes(text)) manualBlockList.push(text);
+    cachedLocalMatches = null; // Invalidate local regex cache
 
     // OPTIMIZED: Local Partial Update instead of Full Background Scan
-    const inputText = shadowRoot ? shadowRoot.getElementById('inputText') : null;
+    const inputText = elInputText;
     if (inputText) {
         const fullText = inputText.value;
         const escaped = escapeRegex(text);
@@ -950,6 +1099,11 @@ async function handleUnmaskAction(text, targetMatch, start = null, end = null) {
             manualBlockList.splice(idx, 1);
             changeMade = true;
         }
+        if (favoritesList.has(raw)) {
+            favoritesList.delete(raw);
+            saveFavorites();
+            changeMade = true;
+        }
         if (/^\[[A-Z]+_\d+\]$/.test(raw)) {
             const originalVal = tokenMap[raw];
             if (originalVal && !ignoredEntities.has(originalVal)) {
@@ -960,6 +1114,7 @@ async function handleUnmaskAction(text, targetMatch, start = null, end = null) {
     });
 
     if (changeMade) {
+        cachedLocalMatches = null; // Invalidate local regex cache
         // OPTIMIZED: Remove from local cache and re-render
         // Filter out matches that are now ignored
         const countBefore = cachedNlpMatches.length;
@@ -978,7 +1133,7 @@ async function handleUnmaskAction(text, targetMatch, start = null, end = null) {
 }
 
 function sendToLLM() {
-    let finalMessage = shadowRoot.getElementById('outputText').innerText;
+    let finalMessage = elOutputText.innerText;
     const targetElement = activeTarget;
     if (targetElement) {
         if (targetElement.value !== undefined) {
@@ -1115,6 +1270,10 @@ async function handleShowOverlay(overrideContent = null, preservedManualBlocks =
     knownEntities = new Map();
     ignoredEntities = new Set();
     currentMatches = [];
+    cachedLockedTokens = null; // Reset locked tokens cache for new overlay session
+    lastRenderFingerprint = ""; // Reset render fingerprint for new overlay session
+    cachedLocalMatches = null; // Reset local regex cache
+    cachedLocalMatchesTextKey = "";
     activeTool = null;
     isMouseDown = false;
 
@@ -1136,22 +1295,20 @@ async function handleShowOverlay(overrideContent = null, preservedManualBlocks =
     updatePlanUI();
 
     setTimeout(() => {
-        const input = shadowRoot.getElementById('inputText');
         if (initialContent && initialContent.trim().length > 0) {
-            if (input) {
-                input.value = initialContent;
+            if (elInputText) {
+                elInputText.value = initialContent;
                 // Immediate Render (Plain Text) so user sees content while analysis runs
                 finalizeProcessing([], 0, 0, 0);
                 // Optimized: Partial Scan of Visible Area (First 5k chars) - 10x faster than default 50k
                 processText(false, true, 5000);
-                const hl = shadowRoot.getElementById('inputHighlights');
-                input.scrollTop = 0;
-                if (hl) hl.scrollTop = 0;
+                elInputText.scrollTop = 0;
+                if (elInputHighlights) elInputHighlights.scrollTop = 0;
             }
         } else {
-            if (input) {
-                input.value = "";
-                input.focus();
+            if (elInputText) {
+                elInputText.value = "";
+                elInputText.focus();
                 processText(false, true);
             }
         }
@@ -2134,9 +2291,14 @@ async function handleResponseAction(action) {
 // --- INITIALIZATION & EVENTS ---
 
 function initOverlayEvents() {
-    const inputText = shadowRoot.getElementById('inputText');
-    const inputHighlights = shadowRoot.getElementById('inputHighlights');
-    const outputText = shadowRoot.getElementById('outputText');
+    // Cache overlay DOM elements at module level (used by hot-path functions)
+    elInputText = shadowRoot.getElementById('inputText');
+    elInputHighlights = shadowRoot.getElementById('inputHighlights');
+    elOutputText = shadowRoot.getElementById('outputText');
+
+    const inputText = elInputText;
+    const inputHighlights = elInputHighlights;
+    const outputText = elOutputText;
 
     if (inputText) {
         lastInputText = inputText.value || "";
@@ -2158,7 +2320,9 @@ function initOverlayEvents() {
 
             clearTimeout(overlayTypingTimer);
             overlayTypingTimer = setTimeout(() => {
-                processText();
+                // Use cursor-centered partial scan for large texts (matches accumulate)
+                const isLargeText = inputText.value.length > 20000;
+                processText(false, isLargeText);
             }, 300);
         });
 
@@ -2670,12 +2834,12 @@ function initOverlayEvents() {
     shadowRoot.addEventListener('click', () => { if (ctxMenu) ctxMenu.style.display = 'none'; });
 
     if (inputText) {
-        let isSyncing = false;
+        let scrollRAF = null;
         // SAFARI FIX: Simple One-Way Scroll Sync (Input -> Highlights)
         // Bidirectional Input <-> Output sync removed to prevent infinite scroll loops.
         let scrollTimer;
-        const syncScroll = () => {
-            // ... existing sync logic ...
+        const syncScrollCore = () => {
+            scrollRAF = null;
             if (inputHighlights && inputText) {
                 // 1. Sync Highlights (Pixel-perfect)
                 if (Math.abs(inputHighlights.scrollTop - inputText.scrollTop) > 1) {
@@ -2748,10 +2912,17 @@ function initOverlayEvents() {
             }
 
             // Trigger Analysis on Scroll (Debounced)
+            // Adaptive debounce: longer for large texts to avoid wasted re-renders during fast scrolling
+            const scrollDebounce = (inputText && inputText.value.length > 20000) ? 500 : 300;
             clearTimeout(scrollTimer);
             scrollTimer = setTimeout(() => {
                 processText(false, true); // forceFullScan=false, fromScroll=true
-            }, 300);
+            }, scrollDebounce);
+        };
+        // rAF guard: batch multiple scroll events into a single frame to avoid redundant layout reads
+        const syncScroll = () => {
+            if (scrollRAF) return;
+            scrollRAF = requestAnimationFrame(syncScrollCore);
         };
         inputText.addEventListener('scroll', syncScroll, { passive: true });
         // NOTE: No listener on outputText. Input drives Output. Output is passive.
@@ -2800,6 +2971,11 @@ function initOverlayEvents() {
                     const originalText = elem.getAttribute('data-text');
                     if (originalText) {
                         ignoredEntities.add(originalText);
+                        if (favoritesList.has(originalText)) {
+                            favoritesList.delete(originalText);
+                            saveFavorites();
+                        }
+                        cachedLocalMatches = null; // Invalidate local regex cache
                         processText(true);
                     }
                 }
@@ -3002,8 +3178,10 @@ function initOverlayEvents() {
         if (!text && contextMenuTargetMatch) text = contextMenuTargetMatch.text;
 
         if (text) {
+            ignoredEntities.delete(text); // Clear any prior unmask
             favoritesList.add(text);
             saveFavorites();
+            cachedLocalMatches = null; // Invalidate local regex cache
             finalizeProcessing(cachedNlpMatches, 0, 0, 0);
         }
         ctxMenu.style.display = 'none';
@@ -3019,6 +3197,7 @@ function initOverlayEvents() {
         if (text && favoritesList.has(text)) {
             favoritesList.delete(text);
             saveFavorites();
+            cachedLocalMatches = null; // Invalidate local regex cache
             finalizeProcessing(cachedNlpMatches, 0, 0, 0);
         }
         ctxMenu.style.display = 'none';

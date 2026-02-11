@@ -394,6 +394,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let matches = [];
 
         try {
+            // Honorific context regex for NAME > CITY boost
+            const BG_NAME_PREFIX_RE = /(?:Mister|Miss(?:es)?|Mrs?\.?|Ms\.?|Mx\.?|Doctor|Dr\.?|Professor|Prof\.?|Sir|Madam|Dame|Lord|Lady|Monsieur|Madame|Mademoiselle|Mme\.?|Mlle\.?|M\.?|Docteur|Professeur|Mai?tre|Maître|Mgr|Monseigneur|Veuve|Herr|Frau|Doktor|Señor|Señora|Señorita|Don|Doña|Sr\.?|Sra\.?|Srta\.?|Signore?|Signora|Signorina|Sig\.?|Dottore|Dottoressa|Dott\.?|Senhor|Senhora|Senhorita|Dom|Dona|Meneer|Mevrouw|Juffrouw|Dhr\.?|Mevr\.?|Sheikh|Abu|Umm)\s*$/i;
+
+            // Priority function (context-aware for NAME)
+            const getPriority = (matchObj) => {
+                const PRIORITY = {
+                    'IBAN': 115, 'CB': 110, 'EMAIL': 105, 'URL': 105,
+                    'CVV': 100,
+                    'UUID': 95, 'VIN': 98, 'IP': 98, 'MAC': 98, 'PATH': 98,
+                    'VCS': 90, 'PASSPORT': 90, 'SSN': 90, 'VAT': 90, 'ID': 90, 'BIC': 90, 'PLATE': 90,
+                    'COUNTRY': 89,
+                    'GPS': 87, 'DATE': 86,
+                    'CITY': 84,
+                    'PHONE': 85, 'NAME': 80,
+                    'POSTAL': 60,
+                    'SECRET': 55, 'KEY': 55, 'PASSWORD': 55, 'PIN': 55, 'JWT': 55, 'AWS': 55, 'CRYPTO': 55,
+                    'TIME': 40, 'AMOUNT': 40
+                };
+                const base = PRIORITY[matchObj.type] || 30;
+                // Contextual NAME boost: 80 -> 85 (above CITY 84)
+                if (matchObj.type === 'NAME' && matchObj.hasNameContext) return 85;
+                return base;
+            };
+
             // Run all detectors
             DETECTORS.forEach(detector => {
                 const results = detector.scan(text);
@@ -407,54 +431,52 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         // Conflict Resolution: Priority > Length
                         const existing = matches[overlapIndex];
 
-                        const PRIORITY = {
-                            'IBAN': 115, 'CB': 110, 'EMAIL': 105, 'URL': 105,
-                            'CVV': 100, // Specific
-                            'UUID': 95, 'VIN': 98, 'IP': 98, 'MAC': 98, 'PATH': 98,
-                            'VCS': 90, 'PASSPORT': 90, 'SSN': 90, 'VAT': 90, 'ID': 90, 'BIC': 90, 'PLATE': 90,
-                            'COUNTRY': 89, // Country > City > Name
-                            'GPS': 87, // GPS > Phone (85)
-                            'DATE': 86, // Date > Phone (85)
-                            'CITY': 84,
-                            'PHONE': 85, 'NAME': 80,
-                            'POSTAL': 60,
-                            // Secrets moved DOWN (User Request: less important than tokens)
-                            'SECRET': 55, 'KEY': 55, 'PASSWORD': 55, 'PIN': 55, 'JWT': 55, 'AWS': 55, 'CRYPTO': 55,
-                            'TIME': 40, 'AMOUNT': 40
+                        // Check honorific prefix context for NAME matches
+                        let hasContext = false;
+                        if (m.type === 'NAME' && m.start > 0) {
+                            const prefixWindow = text.substring(Math.max(0, m.start - 20), m.start);
+                            if (BG_NAME_PREFIX_RE.test(prefixWindow)) hasContext = true;
+                        }
+
+                        const newMatch = {
+                            text: m.text, type: m.type,
+                            start: mStart, end: mEnd, isNLP: true,
+                            hasNameContext: hasContext
                         };
 
-                        const pNew = PRIORITY[m.type] || 30; // Default low-ish
-                        const pOld = PRIORITY[existing.type] || 30;
+                        // Also check adjacent NAME for context
+                        if (m.type === 'NAME' && !hasContext) {
+                            for (const other of matches) {
+                                if (other.type !== 'NAME') continue;
+                                if (other.end >= mStart - 2 && other.end <= mStart) { newMatch.hasNameContext = true; break; }
+                                if (other.start >= mEnd && other.start <= mEnd + 2) { newMatch.hasNameContext = true; break; }
+                            }
+                        }
+
+                        const pNew = getPriority(newMatch);
+                        const pOld = getPriority(existing);
 
                         if (pNew > pOld) {
                             // New is stronger type -> Replace
-                            matches[overlapIndex] = {
-                                text: m.text,
-                                type: m.type,
-                                start: mStart,
-                                end: mEnd,
-                                isNLP: true
-                            };
+                            matches[overlapIndex] = newMatch;
                         } else if (pNew === pOld) {
                             // Same priority -> Longer Wins
                             if (m.text.length > existing.text.length) {
-                                matches[overlapIndex] = {
-                                    text: m.text,
-                                    type: m.type,
-                                    start: mStart,
-                                    end: mEnd,
-                                    isNLP: true
-                                };
+                                matches[overlapIndex] = newMatch;
                             }
                         }
                         // Else (pNew < pOld): Keep existing (e.g. Keep Country, reject Person)
                     } else {
+                        // Check honorific prefix context for standalone NAME matches too
+                        let hasContext = false;
+                        if (m.type === 'NAME' && m.start > 0) {
+                            const prefixWindow = text.substring(Math.max(0, m.start - 20), m.start);
+                            if (BG_NAME_PREFIX_RE.test(prefixWindow)) hasContext = true;
+                        }
                         matches.push({
-                            text: m.text,
-                            type: m.type,
-                            start: mStart,
-                            end: mEnd,
-                            isNLP: true
+                            text: m.text, type: m.type,
+                            start: mStart, end: mEnd, isNLP: true,
+                            hasNameContext: hasContext
                         });
                     }
                 });

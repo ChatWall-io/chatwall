@@ -1300,10 +1300,11 @@ async function handleShowOverlay(overrideContent = null, preservedManualBlocks =
                 elInputText.value = initialContent;
                 // Immediate Render (Plain Text) so user sees content while analysis runs
                 finalizeProcessing([], 0, 0, 0);
-                // Optimized: Partial Scan of Visible Area (First 5k chars) - 10x faster than default 50k
-                processText(false, true, 5000);
                 elInputText.scrollTop = 0;
                 if (elInputHighlights) elInputHighlights.scrollTop = 0;
+                // Use 8k scroll context (fromScroll=true) — same as paste handler.
+                // The 50k default context hangs the background on very large texts.
+                processText(false, true);
             }
         } else {
             if (elInputText) {
@@ -1338,13 +1339,15 @@ function createOverlay() {
             }
         });
 
-        shadowRoot = overlayContainer.attachShadow({ mode: 'open' });
+        shadowRoot = overlayContainer.attachShadow({ mode: 'closed' });
         const link = document.createElement('link');
         link.setAttribute('rel', 'stylesheet');
         link.setAttribute('href', chrome.runtime.getURL('overlay.css'));
+        // Wait for CSS to load before showing content (prevent FOUC)
+        const cssReady = new Promise(r => { link.onload = r; link.onerror = r; });
         shadowRoot.appendChild(link);
 
-        fetch(chrome.runtime.getURL('overlay.html') + '?t=' + Date.now()).then(res => res.text()).then(html => {
+        fetch(chrome.runtime.getURL('overlay.html') + '?t=' + Date.now()).then(res => res.text()).then(async html => {
             html = localizeHtml(html);
 
             // OPTIMIZATION: Perform string replacements BEFORE creating DOM to avoid layout reflows and Safari security blocks
@@ -1354,11 +1357,11 @@ function createOverlay() {
 
             const wrapper = document.createElement('div');
             wrapper.innerHTML = html;
-            // const doc = wrapper; // No longer needed
-            // doc.querySelectorAll('img[src="logo.png"]').forEach(img => img.src = logoUrl); // Handled by string replace above
-            // wrapper.innerHTML = wrapper.innerHTML.replace(/http:\/\/localhost:3000/g, CONFIG_API_URL); // Handled by string replace above
 
             shadowRoot.appendChild(wrapper);
+
+            // Wait for CSS before initializing events (ensures layout is correct)
+            await cssReady;
 
             initOverlayEvents();
             resolve();
@@ -2327,15 +2330,14 @@ function initOverlayEvents() {
         });
 
         inputText.addEventListener('paste', () => {
+            const savedScrollTop = inputText.scrollTop;
             setTimeout(() => {
+                // Restore scroll position (browser scrolls to cursor on paste)
+                inputText.scrollTop = savedScrollTop;
+                if (elInputHighlights) elInputHighlights.scrollTop = savedScrollTop;
                 // Optimized Paste: Immediate Partial Scan of Visible Area
                 // forceFullScan=false, fromScroll=true (To center on viewport)
                 processText(false, true);
-
-                // Fallback: If pasted content is huge and partial scan missed something deep,
-                // the scroll handler or eventual typing will catch it.
-                // Or we could schedule a full background scan later if idle?
-                // For now, partial is enough for immediate feedback.
             }, 50);
         });
     }

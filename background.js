@@ -394,8 +394,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let matches = [];
 
         try {
-            // Honorific context regex for NAME > CITY boost
-            const BG_NAME_PREFIX_RE = /(?:Mister|Miss(?:es)?|Mrs?\.?|Ms\.?|Mx\.?|Doctor|Dr\.?|Professor|Prof\.?|Sir|Madam|Dame|Lord|Lady|Monsieur|Madame|Mademoiselle|Mme\.?|Mlle\.?|M\.?|Docteur|Professeur|Mai?tre|Maître|Mgr|Monseigneur|Veuve|Herr|Frau|Doktor|Señor|Señora|Señorita|Don|Doña|Sr\.?|Sra\.?|Srta\.?|Signore?|Signora|Signorina|Sig\.?|Dottore|Dottoressa|Dott\.?|Senhor|Senhora|Senhorita|Dom|Dona|Meneer|Mevrouw|Juffrouw|Dhr\.?|Mevr\.?|Sheikh|Abu|Umm)\s*$/i;
+            // Honorific context regex for NAME > CITY boost (shared from name.js)
 
             // Priority function (context-aware for NAME)
             const getPriority = (matchObj) => {
@@ -435,7 +434,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         let hasContext = false;
                         if (m.type === 'NAME' && m.start > 0) {
                             const prefixWindow = text.substring(Math.max(0, m.start - 20), m.start);
-                            if (BG_NAME_PREFIX_RE.test(prefixWindow)) hasContext = true;
+                            if (HONORIFIC_RE.test(prefixWindow)) hasContext = true;
                         }
 
                         const newMatch = {
@@ -471,7 +470,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         let hasContext = false;
                         if (m.type === 'NAME' && m.start > 0) {
                             const prefixWindow = text.substring(Math.max(0, m.start - 20), m.start);
-                            if (BG_NAME_PREFIX_RE.test(prefixWindow)) hasContext = true;
+                            if (HONORIFIC_RE.test(prefixWindow)) hasContext = true;
                         }
                         matches.push({
                             text: m.text, type: m.type,

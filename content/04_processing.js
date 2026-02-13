@@ -165,13 +165,13 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
         // --- CONTEXTUAL NAME BOOST ---
         // If a NAME match has an honorific prefix or an adjacent NAME match,
         // boost its priority above CITY (85 > 84) so names are preferred over cities in context.
-        const NAME_PREFIX_RE = /(?:Mister|Miss(?:es)?|Mrs?\.?|Ms\.?|Mx\.?|Doctor|Dr\.?|Professor|Prof\.?|Sir|Madam|Dame|Lord|Lady|Monsieur|Madame|Mademoiselle|Mme\.?|Mlle\.?|M\.?|Docteur|Professeur|Mai?tre|Maître|Mgr|Monseigneur|Veuve|Herr|Frau|Doktor|Señor|Señora|Señorita|Don|Doña|Sr\.?|Sra\.?|Srta\.?|Signore?|Signora|Signorina|Sig\.?|Dottore|Dottoressa|Dott\.?|Senhor|Senhora|Senhorita|Dom|Dona|Meneer|Mevrouw|Juffrouw|Dhr\.?|Mevr\.?|Sheikh|Abu|Umm)\s*$/i;
+        // Uses shared HONORIFIC_RE from name.js
 
         allMatches.forEach(m => {
             if (m.type !== 'NAME') return;
             // Check 1: Honorific prefix in the text before this match
             const prefixWindow = rawText.substring(Math.max(0, m.start - 20), m.start);
-            if (NAME_PREFIX_RE.test(prefixWindow)) {
+            if (HONORIFIC_RE.test(prefixWindow)) {
                 m.hasNameContext = true;
                 return;
             }

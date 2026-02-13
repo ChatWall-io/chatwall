@@ -83,7 +83,7 @@ ChatWall is built on a **"Local First"** architecture to maximize privacy.
 -   **Zero-Knowledge**: We do not know who you are masking or what you are typing.
 -   **No Analytics on Content**: We do not track prompt content.
 -   **License Validation**: The only network request made to `chatwall.io` is to validate your License Key (if Premium). This sends your email, anonymous ID and License Key.
--   **Open Source-ish**: The code is inspectable. You can verify network activity in DevTools (Network Tab) to see that no data leaves your machine.
+-   **Open Source-ish**: The code is inspectable. To verify that no data leaves your machine, open `chrome://extensions`, find ChatWall, and click **"Inspect views: service worker"** — the **Network Tab** there shows the extension's only external request (license validation). In the browser DevTools (F12), you may see `chrome-extension://` requests — these are the extension loading its own local UI files. Any other requests (analytics, telemetry, etc.) originate from the website itself (ChatGPT, Gemini, etc.) and are not related to ChatWall.
 
 ## 🤝 Contribution
 

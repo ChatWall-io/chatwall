@@ -10,5 +10,5 @@
 const ChatWallConfig = {
     API_URL: "http://localhost:3000",
     // API_URL: "https://chatwall.io",
-    ENABLE_DEV_LICENSE_CHECK: true, // Enforce license check in dev by default
+    ENABLE_DEV_LICENSE_CHECK: false, // Enforce license check in dev by default
 };

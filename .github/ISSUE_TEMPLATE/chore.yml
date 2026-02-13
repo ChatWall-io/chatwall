@@ -1,0 +1,50 @@
+name: "🔧 Chore"
+description: Maintenance, dependencies, or build tasks.
+title: "chore: "
+labels: ["type: chore"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the maintenance task.
+      placeholder: What needs to be done?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: chore-type
+    attributes:
+      label: Chore Category
+      description: What kind of maintenance is this?
+      options:
+        - Dependency Update
+        - Build / Packaging
+        - CI / CD Pipeline
+        - Configuration
+        - Cleanup / Dead Code Removal
+        - Release / Versioning
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this task needed?
+      placeholder: "e.g., Security vulnerability in dependency X, outdated build script..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Task Checklist
+      description: Break down the work into actionable items.
+      placeholder: |
+        - [ ] Update manifest.json version
+        - [ ] Rebuild packages for all browsers
+        - [ ] Update CHANGELOG
+    validations:
+      required: false

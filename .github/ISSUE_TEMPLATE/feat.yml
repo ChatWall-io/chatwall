@@ -1,0 +1,56 @@
+name: "✨ Feature Request"
+description: Propose a new feature or enhancement.
+title: "feat: "
+labels: ["type: feat"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the feature you'd like to see implemented.
+      placeholder: A clear and concise description of the feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-value
+    attributes:
+      label: User Value
+      description: How does this benefit end users? What problem does it solve?
+      placeholder: "As a user, I want to ... so that ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the approach or implementation you have in mind.
+      placeholder: Describe the technical approach or UX flow.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you've considered.
+      placeholder: Describe alternatives.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Which part of the project does this affect?
+      options:
+        - Extension (Content Script)
+        - Extension (Background / Service Worker)
+        - Extension (UI / Overlay)
+        - Detectors (PII Detection)
+        - Website / Dashboard
+        - Build / Packaging
+        - Other
+    validations:
+      required: false

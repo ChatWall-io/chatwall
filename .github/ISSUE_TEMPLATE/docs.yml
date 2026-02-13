@@ -1,0 +1,48 @@
+name: "📝 Documentation"
+description: Propose documentation changes or improvements.
+title: "docs: "
+labels: ["type: docs"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What documentation needs to be created or updated?
+      placeholder: Describe the documentation change.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation is affected?
+      options:
+        - README
+        - Code Comments / JSDoc
+        - Contributing Guide
+        - Architecture / Design Docs
+        - User Guide / FAQ
+        - API Documentation
+        - License / Legal
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-gap
+    attributes:
+      label: Current Gap
+      description: What is missing, incorrect, or outdated in the current documentation?
+      placeholder: "e.g., The README doesn't explain how to run detectors locally."
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed-content
+    attributes:
+      label: Proposed Content
+      description: Draft or outline of the documentation you'd like to add.
+      placeholder: Provide a draft or key points to cover.
+    validations:
+      required: false

@@ -1,0 +1,58 @@
+name: "🧪 Tests"
+description: Add or update tests.
+title: "test: "
+labels: ["type: test"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the tests to add or update.
+      placeholder: What functionality needs test coverage?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: test-type
+    attributes:
+      label: Test Type
+      description: What kind of tests are involved?
+      options:
+        - Unit Tests
+        - Integration Tests
+        - End-to-End / Browser Tests
+        - Regression Tests
+        - Test Fixtures / Data
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: coverage-gap
+    attributes:
+      label: Coverage Gap
+      description: What is currently untested or poorly tested?
+      placeholder: "e.g., The IBAN detector has no test for BE-format IBANs with spaces."
+    validations:
+      required: false
+
+  - type: textarea
+    id: test-cases
+    attributes:
+      label: Test Cases
+      description: List the specific test scenarios to implement.
+      placeholder: |
+        - [ ] Valid IBAN with spaces → detected
+        - [ ] Invalid checksum → rejected
+        - [ ] Partial IBAN in URL → not detected
+    validations:
+      required: false
+
+  - type: textarea
+    id: related-code
+    attributes:
+      label: Related Source Code
+      description: Which source files do these tests cover?
+      placeholder: "e.g., detectors/bank/iban.js"
+    validations:
+      required: false

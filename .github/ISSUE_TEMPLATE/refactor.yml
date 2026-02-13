@@ -1,0 +1,44 @@
+name: "♻️ Refactor"
+description: Propose a code change that neither fixes a bug nor adds a feature.
+title: "refactor: "
+labels: ["type: refactor"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the refactoring you'd like to perform.
+      placeholder: What code needs restructuring and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this refactoring needed? What problems does the current code have?
+      placeholder: "e.g., code duplication, poor readability, tight coupling, technical debt..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-files
+    attributes:
+      label: Affected Files / Modules
+      description: Which files or modules will be changed?
+      placeholder: |
+        - content.js (finalizeProcessing)
+        - background.js (ANALYZE_TEXT handler)
+    validations:
+      required: false
+
+  - type: dropdown
+    id: breaking-changes
+    attributes:
+      label: Breaking Changes
+      description: Does this refactoring introduce any breaking changes?
+      options:
+        - "No"
+        - "Yes — described above"
+    validations:
+      required: true

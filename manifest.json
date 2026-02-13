@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "ChatWall",
-    "version": "1.7",
+    "version": "1.1.5.0",
     "default_locale": "en",
     "description": "Chat with AI. Keep Data Private. The AI Privacy Firewall.",
     "icons": {
@@ -91,7 +91,17 @@
                 "detectors/id/vat.js",
                 "detectors/id/vin.js",
                 "detectors/bank/vcs.js",
-                "content.js"
+                "content/01_variables.js",
+                "content/02_storage.js",
+                "content/03_utils.js",
+                "content/04_processing.js",
+                "content/05_masking.js",
+                "content/06_unmasking.js",
+                "content/07_overlay_ui.js",
+                "content/08_float_button.js",
+                "content/09_overlay_events.js",
+                "content/10_context_menu.js",
+                "content/11_page_events.js"
             ]
         }
     ],

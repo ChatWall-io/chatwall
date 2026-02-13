@@ -1,0 +1,55 @@
+name: "⚡ Performance Improvement"
+description: Propose a code change that improves performance.
+title: "perf: "
+labels: ["type: perf"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the performance issue and the proposed optimization.
+      placeholder: What is slow, and how should it be improved?
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: How does the current code perform? Include metrics if available.
+      placeholder: "e.g., Processing 1.7M chars takes 30s and crashes the service worker."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-optimization
+    attributes:
+      label: Proposed Optimization
+      description: Describe the optimization approach.
+      placeholder: "e.g., Cap text to 8k chars using windowed sampling."
+    validations:
+      required: true
+
+  - type: textarea
+    id: benchmarks
+    attributes:
+      label: Benchmarks / Measurements
+      description: Any profiling data, timings, or memory measurements.
+      placeholder: "Before: 30s / After: 200ms"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Bottleneck Area
+      description: Where is the performance bottleneck?
+      options:
+        - Regex / PII Detection
+        - DOM Manipulation / Rendering
+        - Service Worker / Background Script
+        - Network / API Calls
+        - Memory Usage
+        - Other
+    validations:
+      required: false

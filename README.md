@@ -42,7 +42,18 @@ ChatWall is built on a **"Local First"** architecture to maximize privacy.
 
 ## 📂 Code Structure
 
--   **`content.js`**: Unlike traditional extensions, ChatWall relies heavily on a monolithic content script to manage the complex Overlay state, communication between UI and Logic, and DOM injection.
+-   **`content/`**: Modular content scripts, loaded in order via `manifest.json`. All files share a global scope (no bundler needed).
+    -   `01_variables.js` – Global state, constants, entity tiers, SVG assets.
+    -   `02_storage.js` – Token map, counters, favorites, plan persistence.
+    -   `03_utils.js` – DOM helpers, text extraction, button detection, token locking.
+    -   `04_processing.js` – Core text analysis, scoring, overlap resolution, rendering.
+    -   `05_masking.js` – Outbound masking flow: tokenize → send to AI prompt.
+    -   `06_unmasking.js` – Inbound unmasking flow: detect tokens → restore originals.
+    -   `07_overlay_ui.js` – Overlay lifecycle (create / show / hide), toasts, plan UI.
+    -   `08_float_button.js` – Floating button, risk analysis, decision popup.
+    -   `09_overlay_events.js` – Overlay interaction (input, toolbar, scroll sync, settings, license).
+    -   `10_context_menu.js` – Right-click context menu (cut, copy, paste, mask/unmask, favorites).
+    -   `11_page_events.js` – Chrome messages, typing detection, MutationObserver, bootstrap.
 -   **`detectors/`**: Contains the detection modules.
     -   `detector.js`: Base class for logic.
     -   `name.js`, `email.js`, etc.: Specific implementation rules.

@@ -1,0 +1,50 @@
+name: "🎨 Code Style"
+description: Formatting, white-space, or code style improvements.
+title: "style: "
+labels: ["type: style"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the code style change.
+      placeholder: What formatting or style inconsistency needs fixing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-files
+    attributes:
+      label: Affected Files
+      description: Which files need style fixes?
+      placeholder: |
+        - content.js
+        - overlay.css
+    validations:
+      required: false
+
+  - type: dropdown
+    id: style-type
+    attributes:
+      label: Style Category
+      description: What kind of style change is this?
+      options:
+        - Indentation / Whitespace
+        - Naming Conventions
+        - Code Formatting (semicolons, quotes, etc.)
+        - CSS Formatting / Organization
+        - Linter / Prettier Compliance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples
+      description: Show before/after examples of the style change.
+      placeholder: |
+        Before: `const x=1;`
+        After:  `const x = 1;`
+    validations:
+      required: false

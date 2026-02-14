@@ -207,25 +207,23 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
             if (t === 'VIN') return 98;
             if (t === 'IP' || t === 'MAC' || t === 'PATH') return 98;
 
-            if (t === 'SECRET' || t === 'KEY' || t === 'PASSWORD' || t === 'PIN' || t === 'JWT' || t === 'AWS' || t === 'CRYPTO' || t === 'PASS') return 92;
+            if (t === 'VCS' || t === 'PASSPORT' || t === 'SSN' || t === 'VAT' || t === 'BIC' || t === 'PLATE') return 90;
 
-            if (t === 'VCS' || t === 'PASSPORT' || t === 'SSN' || t === 'VAT' || t === 'ID' || t === 'BIC' || t === 'PLATE') return 90;
+            if (t === 'COUNTRY') return 89;
 
-            if (t === 'GPS') return 87; // GPS > Phone (85)
-            if (t === 'DATE') return 86; // Date > Phone (85)
+            if (t === 'GPS') return 87;
+            if (t === 'DATE') return 86;
+            if (t === 'TIME') return 86;
+            if (t === 'AMOUNT') return 86;
+            if (t === 'MONEY') return 86;
             if (t === 'PHONE') return 85;
+            if (t === 'SECRET' || t === 'KEY' || t === 'PASSWORD' || t === 'PIN' || t === 'JWT' || t === 'AWS' || t === 'CRYPTO' || t === 'PASS') return 84;
+            if (t === 'ID') return 83;
+            if (t === 'CITY') return 82;
             if (t === 'NAME') return (m && m.hasNameContext) ? 85 : 80;
-            if (t === 'PERSON') return 80; // legacy fallback
+            if (t === 'PERSON') return 80;
 
-            if (t === 'COUNTRY') return 89; // Country > City
-
-            if (t === 'CITY') return 84; // City > Name
             if (t === 'POSTAL') return 60;
-
-
-            if (t === 'TIME') return 40;
-            if (t === 'AMOUNT') return 40;
-            if (t === 'MONEY') return 40;
 
             return 30; // Default matches background "low-ish"
         };

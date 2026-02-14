@@ -6,25 +6,26 @@
  * @copyright © 2025 StarObject S.A. - Philippe Collignon. All Rights Reserved.
  */
 
-// Top Cities: Specific Asian hubs + Top Western Cities (Lowercase)
+// Top Cities: Specific Asian hubs + Top Western Cities (Title Case)
 (function (global) {
     const sampleCities = [
-        "mexico", "new york", "los angeles", "chicago", "toronto", "houston", "phoenix", "philadelphia",
-        "san antonio", "san diego", "dallas", "san jose", "austin", "jacksonville", "fort worth", "columbus",
-        "charlotte", "indianapolis", "san francisco", "seattle", "denver", "washington", "boston", "el paso",
-        "nashville", "detroit", "oklahoma city", "portland", "las vegas", "memphis", "louisville", "baltimore",
-        "milwaukee", "albuquerque", "tucson", "fresno", "sacramento", "mesa", "kansas city", "atlanta",
-        "miami", "raleigh", "omaha", "long beach", "virginia beach", "oakland", "minneapolis", "tulsa",
-        "arlington", "tampa", "new orleans", "montreal", "vancouver", "calgary", "ottawa", "edmonton",
-        "moscow", "paris", "london", "madrid", "barcelona", "saint petersburg", "rome", "berlin",
-        "athens", "milan", "istanbul", "kiev", "lisbon", "manchester", "birmingham", "hamburg",
-        "munich", "vienna", "warsaw", "budapest", "bucharest", "prague", "brussels", "amsterdam",
-        "stockholm", "copenhagen", "oslo", "helsinki", "dublin", "zurich", "geneva", "lyon",
-        "marseille", "naples", "turin", "valencia", "seville", "frankfurt", "cologne", "stuttgart",
-        "tokyo", "shanghai", "singapore", "hong kong", "beijing", "delhi",
+        "Mexico", "New York", "Los Angeles", "Chicago", "Toronto", "Houston", "Phoenix", "Philadelphia",
+        "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville", "Fort Worth", "Columbus",
+        "Charlotte", "Indianapolis", "San Francisco", "Seattle", "Denver", "Washington", "Boston", "El Paso",
+        "Nashville", "Detroit", "Oklahoma City", "Portland", "Las Vegas", "Memphis", "Louisville", "Baltimore",
+        "Milwaukee", "Albuquerque", "Tucson", "Fresno", "Sacramento", "Mesa", "Kansas City", "Atlanta",
+        "Miami", "Raleigh", "Omaha", "Long Beach", "Virginia Beach", "Oakland", "Minneapolis", "Tulsa",
+        "Arlington", "Tampa", "New Orleans", "Montreal", "Vancouver", "Calgary", "Ottawa", "Edmonton",
+        "Moscow", "Paris", "London", "Madrid", "Barcelona", "Saint Petersburg", "Rome", "Berlin",
+        "Athens", "Milan", "Istanbul", "Kiev", "Lisbon", "Manchester", "Birmingham", "Hamburg",
+        "Munich", "Vienna", "Warsaw", "Budapest", "Bucharest", "Prague", "Brussels", "Amsterdam",
+        "Stockholm", "Copenhagen", "Oslo", "Helsinki", "Dublin", "Zurich", "Geneva", "Lyon",
+        "Marseille", "Naples", "Turin", "Valencia", "Seville", "Frankfurt", "Cologne", "Stuttgart",
+        "Tokyo", "Shanghai", "Singapore", "Hong Kong", "Beijing", "Delhi",
     ];
 
     global.citiesdataSet = new Set(sampleCities);
+    global.cityset = global.citiesdataSet; // Alias: CityDetector looks for "cityset"
     console.log("ChatWall: Loaded OSS Sample City Dataset (" + sampleCities.length + " entries).");
 
 })(self);

@@ -83,16 +83,51 @@ ChatWall is built on a **"Local First"** architecture to maximize privacy.
 -   **Zero-Knowledge**: We do not know who you are masking or what you are typing.
 -   **No Analytics on Content**: We do not track prompt content.
 -   **License Validation**: The only network request made to `chatwall.io` is to validate your License Key (if Premium). This sends your email, anonymous ID and License Key.
--   **Open Source-ish**: The code is inspectable. You can verify network activity in DevTools (Network Tab) to see that no data leaves your machine.
+-   **Open Source-ish**: The code is inspectable. To verify that no data leaves your machine, open `chrome://extensions`, find ChatWall, and click **"Inspect views: service worker"** — the **Network Tab** there shows the extension's only external request (license validation). In the browser DevTools (F12), you may see `chrome-extension://` requests — these are the extension loading its own local UI files. Any other requests (analytics, telemetry, etc.) originate from the website itself (ChatGPT, Gemini, etc.) and are not related to ChatWall.
 
 ## 🤝 Contribution
 
 1.  Fork the repository.
-2.  Create a feature branch (`git checkout -b feature-new-detector`).
-3.  Add your detector in `detectors/` and register it in `manifest.json`.
-4.  Submit a Pull Request.
+2.  Create a branch from `develop` following the naming convention below.
+3.  Make your changes and commit using conventional commit messages.
+4.  Submit a Pull Request targeting `develop`.
 
-**Note**: Please ensure any new detector strictly uses local logic (Regex/Algorithmic). No API calls allowed in detectors.
+### Branch Naming
+
+Branches must follow the pattern **`type/issue-number-short-description`**, where `type` matches one of the [issue templates](.github/ISSUE_TEMPLATE/):
+
+| Type | Description | Branch Example |
+|---|---|---|
+| `feat` | New feature or enhancement | `feat/12-add-iban-detector` |
+| `fix` | Bug fix | `fix/34-overlay-scroll-desync` |
+| `refactor` | Code restructuring (no behavior change) | `refactor/7-split-content-modules` |
+| `perf` | Performance improvement | `perf/45-optimize-large-text` |
+| `style` | Code style / formatting | `style/51-lint-detectors` |
+| `test` | Adding or updating tests | `test/60-name-detector-cases` |
+| `docs` | Documentation changes | `docs/18-update-readme` |
+| `chore` | Maintenance, deps, build tasks | `chore/22-update-manifest-version` |
+
+### Commit Messages
+
+Commits must use [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```
+type: short description
+
+# Examples
+feat: add GPS coordinate detector
+fix: prevent overlay from closing on outside click
+refactor: extract honorific list into shared module
+perf: cache DOM queries in overlay rendering
+```
+
+### Adding a New Detector
+
+1.  Create your detector file in `detectors/` (extend `ContextualDetector` from `detector.js`).
+2.  Register it in both `manifest.json` and `manifest.firefox.json`.
+3.  Instantiate it in the `DETECTORS` array in `background.js`.
+
+**Note**: Detectors must use strictly local logic (Regex/Algorithmic). No API calls allowed.
 
 ## 📄 License
 

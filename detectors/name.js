@@ -102,6 +102,11 @@ const RAW_PREFIXES = [
 // Sort matches by length descending for regex safety
 const PREFIXES = RAW_PREFIXES.sort((a, b) => b.length - a.length).join("|");
 
+// --- SHARED GLOBALS (used by background.js and content/04_processing.js) ---
+// Exported as globals to avoid duplicating the honorific list in multiple files.
+var HONORIFIC_PREFIXES = RAW_PREFIXES;
+var HONORIFIC_RE = new RegExp(`(?:${PREFIXES})\\s*$`, 'i');
+
 // Greetings
 const GREETINGS = [
     "Hi", "Hello", "Hey", "Dear", "Greetings",

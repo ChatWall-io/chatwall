@@ -15,11 +15,10 @@ class IbanDetector extends ContextualDetector {
         super();
         this.addRule({
             type: 'IBAN',
-            // Pattern from Presidio IbanRecognizer ("IBAN Generic")
-            // Relaxed to support variable spacing (e.g. groups of 4 or irregular)
-            // Matches: Country(2) + Check(2) + 10-32 alphanum chars (with optional space/dash)
+            // Pattern: Valid IBAN country codes + Check(2) + 10-32 alphanum chars (with optional space/dash)
+            // Uses explicit ISO 13616 country codes to avoid false positives (e.g. "of 50 similar")
             // Fix: Negative lookahead to prevent consuming " BIC" at the end
-            pattern: /\b[A-Z]{2} ?\d{2}(?:(?!\sBIC\b)[ -]?[A-Z0-9]){10,32}\b/gi,
+            pattern: /\b(?:AL|AD|AT|AZ|BH|BY|BE|BA|BR|BG|CR|HR|CY|CZ|DK|DO|EG|SV|EE|FO|FI|FR|GE|DE|GI|GR|GL|GT|HU|IS|IQ|IE|IL|IT|JO|KZ|XK|KW|LV|LB|LI|LT|LU|MK|MT|MR|MU|MD|MC|ME|NL|NO|PK|PS|PL|PT|QA|RO|LC|SM|ST|SA|RS|SC|SK|SI|ES|SD|SE|CH|TL|TN|TR|UA|AE|GB|VA|VG|GF|GP|MQ|RE|PF|TF|YT|NC|BL|MF|PM|WF) ?\d{2}(?:(?!\sBIC\b)[ -]?[A-Z0-9]){10,32}\b/g,
             validator: (match) => {
                 const clean = match.replace(/[- ]/g, '').toUpperCase();
 

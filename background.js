@@ -13,6 +13,12 @@ try { if (typeof importScripts === 'function') importScripts('config.js'); } cat
 const API_BASE_URL = (typeof ChatWallConfig !== 'undefined') ? ChatWallConfig.API_URL : "http://localhost:3000";
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
+// Safari Detection (background/service worker context)
+const IS_SAFARI_BG = (typeof browser !== 'undefined' && typeof browser.runtime !== 'undefined'
+    && typeof browser.runtime.getURL === 'function' && browser.runtime.getURL('').startsWith('safari'));
+const SAFARI_APP_ID = (typeof ChatWallConfig !== 'undefined' && ChatWallConfig.SAFARI_APP_ID)
+    ? ChatWallConfig.SAFARI_APP_ID : 'io.chatwall.ChatWall.Extension';
+
 // --- MEMORY STORE ---
 let BG_TOKEN_MAP = {};
 let BG_COUNTERS = {
@@ -197,6 +203,24 @@ async function validateLicense(explicitDeviceId = null) {
 }
 
 async function _validateLicenseInner(explicitDeviceId = null) {
+    // Safari: Skip API license validation — premium status comes from native IAP
+    if (IS_SAFARI_BG) {
+        return new Promise((resolve) => {
+            if (chrome.runtime.sendNativeMessage) {
+                chrome.runtime.sendNativeMessage(SAFARI_APP_ID, { action: 'check_premium_status' }, (response) => {
+                    if (chrome.runtime.lastError || !response || !response.isPremium) {
+                        resolve({ plan: 'FREE', status: 'SAFARI_IAP_FREE' });
+                    } else {
+                        updatePlanStorage('PREMIUM', null);
+                        resolve({ plan: 'PREMIUM', status: 'SAFARI_IAP_VALID' });
+                    }
+                });
+            } else {
+                resolve({ plan: 'FREE', status: 'SAFARI_NO_NATIVE' });
+            }
+        });
+    }
+
     const deviceId = explicitDeviceId || await getDeviceId();
     let isDev = false;
     if (chrome.management && chrome.management.getSelf) {
@@ -487,6 +511,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         } catch (err) { console.error("NLP Error", err); }
         sendResponse({ matches: matches });
         return true; // async
+    }
+
+    // --- SAFARI IAP ACTIONS ---
+    else if (request.action === 'START_PURCHASE') {
+        if (chrome.runtime.sendNativeMessage) {
+            chrome.runtime.sendNativeMessage(SAFARI_APP_ID, { action: 'purchase_premium' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error('ChatWall: Native purchase error:', chrome.runtime.lastError);
+                    sendResponse({ success: false, error: chrome.runtime.lastError.message });
+                    return;
+                }
+                sendResponse(response || { status: 'opening_app' });
+            });
+        } else {
+            sendResponse({ success: false, error: 'Native messaging not available' });
+        }
+        return true;
+    }
+
+    else if (request.action === 'CHECK_PREMIUM_STATUS') {
+        if (chrome.runtime.sendNativeMessage) {
+            chrome.runtime.sendNativeMessage(SAFARI_APP_ID, { action: 'check_premium_status' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    sendResponse({ isPremium: false });
+                    return;
+                }
+                if (response && response.isPremium) {
+                    updatePlanStorage('PREMIUM', null);
+                }
+                sendResponse(response || { isPremium: false });
+            });
+        } else {
+            sendResponse({ isPremium: false });
+        }
+        return true;
     }
 
     // --- SETTINGS ACTIONS ---

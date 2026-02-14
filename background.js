@@ -402,13 +402,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     'IBAN': 115, 'CB': 110, 'EMAIL': 105, 'URL': 105,
                     'CVV': 100,
                     'UUID': 95, 'VIN': 98, 'IP': 98, 'MAC': 98, 'PATH': 98,
+                    'SECRET': 92, 'KEY': 92, 'PASSWORD': 92, 'PIN': 92, 'JWT': 92, 'AWS': 92, 'CRYPTO': 92,
                     'VCS': 90, 'PASSPORT': 90, 'SSN': 90, 'VAT': 90, 'ID': 90, 'BIC': 90, 'PLATE': 90,
                     'COUNTRY': 89,
                     'GPS': 87, 'DATE': 86,
                     'CITY': 84,
                     'PHONE': 85, 'NAME': 80,
                     'POSTAL': 60,
-                    'SECRET': 55, 'KEY': 55, 'PASSWORD': 55, 'PIN': 55, 'JWT': 55, 'AWS': 55, 'CRYPTO': 55,
                     'TIME': 40, 'AMOUNT': 40
                 };
                 const base = PRIORITY[matchObj.type] || 30;

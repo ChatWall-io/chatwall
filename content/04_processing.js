@@ -207,6 +207,8 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
             if (t === 'VIN') return 98;
             if (t === 'IP' || t === 'MAC' || t === 'PATH') return 98;
 
+            if (t === 'SECRET' || t === 'KEY' || t === 'PASSWORD' || t === 'PIN' || t === 'JWT' || t === 'AWS' || t === 'CRYPTO' || t === 'PASS') return 92;
+
             if (t === 'VCS' || t === 'PASSPORT' || t === 'SSN' || t === 'VAT' || t === 'ID' || t === 'BIC' || t === 'PLATE') return 90;
 
             if (t === 'GPS') return 87; // GPS > Phone (85)
@@ -220,7 +222,6 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
             if (t === 'CITY') return 84; // City > Name
             if (t === 'POSTAL') return 60;
 
-            if (t === 'SECRET' || t === 'KEY' || t === 'PASSWORD' || t === 'PIN' || t === 'JWT' || t === 'AWS' || t === 'CRYPTO' || t === 'PASS') return 55;
 
             if (t === 'TIME') return 40;
             if (t === 'AMOUNT') return 40;

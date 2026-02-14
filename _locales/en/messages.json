@@ -39,7 +39,7 @@
         "message": "Anonymized (Will be sent to AI)"
     },
     "title_anonymize_mode": {
-        "message": "Chat with AI. Keep data private"
+        "message": "Chat with AI. Keep data private."
     },
     "title_deanonymize_mode": {
         "message": "De-anonymized Content"

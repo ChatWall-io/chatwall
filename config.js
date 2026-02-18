@@ -11,4 +11,5 @@ const ChatWallConfig = {
     API_URL: "http://localhost:3000",
     // API_URL: "https://chatwall.io",
     ENABLE_DEV_LICENSE_CHECK: false, // Enforce license check in dev by default
+    SAFARI_APP_ID: "io.chatwall.ChatWall.Extension" // Safari native messaging app ID
 };

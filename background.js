@@ -296,7 +296,11 @@ function updateTabsPlan(plan, alertUser) {
 // 4. EVENTS
 // ============================================================
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
+    if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+        chrome.tabs.create({ url: "https://chatwall.io/support.html" });
+    }
+
     validateLicense().then(() => {
         chrome.storage.local.set({ 'chatwall_last_check': Date.now() });
     });

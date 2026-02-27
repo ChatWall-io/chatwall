@@ -28,6 +28,57 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === "SHOW_OVERLAY") {
         handleShowOverlay();
         sendResponse({ ok: true });
+    } else if (msg.action === "OPEN_MODE_MENU") {
+        // Triggered by "Configure ChatWall" browser context menu item.
+        // createModeMenu() is idempotent (skips if already created).
+        // window.cwOpenModeMenu() is the public hook set up inside createModeMenu().
+        if (typeof createModeMenu === 'function') {
+            createModeMenu();               // no-op if already created
+            if (typeof window.cwOpenModeMenu === 'function') {
+                window.cwOpenModeMenu();    // force-open the dropdown panel
+            }
+            sendResponse({ ok: true });
+        } else {
+            sendResponse({ ok: false, reason: 'createModeMenu not available' });
+        }
+    } else if (msg.action === "OPEN_MODE_MENU_UNSUPPORTED") {
+        // Show a friendly in-page popup when user is on an unsupported site
+        (function showUnsupportedPopup() {
+            if (document.getElementById('cw-unsupported-popup')) return;
+            const popup = document.createElement('div');
+            popup.id = 'cw-unsupported-popup';
+            Object.assign(popup.style, {
+                position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)',
+                zIndex: '2147483647', background: 'rgba(18,20,32,0.97)',
+                border: '1.5px solid rgba(99,102,241,0.55)', borderRadius: '12px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)', padding: '20px 24px',
+                fontFamily: 'system-ui, sans-serif', color: '#e2e8f0', maxWidth: '340px',
+                textAlign: 'center', lineHeight: '1.5',
+            });
+            popup.innerHTML = `
+                <div style="font-weight:700;font-size:14px;margin-bottom:8px;">
+                    🛡 ChatWall — Configure
+                </div>
+                <div style="font-size:12.5px;color:#94a3b8;margin-bottom:14px;">
+                    "Configure ChatWall" works on supported AI chat sites.<br>
+                    Please navigate to one of these, then try again:
+                </div>
+                <div style="font-size:12px;color:#a5b4fc;margin-bottom:16px;line-height:2;">
+                    ChatGPT &nbsp;·&nbsp; Gemini &nbsp;·&nbsp; Claude<br>
+                    Mistral &nbsp;·&nbsp; Copilot &nbsp;·&nbsp; Grok
+                </div>
+                <button id="cw-unsupported-close"
+                    style="background:rgba(99,102,241,0.25);border:1px solid rgba(99,102,241,0.5);
+                    color:#e2e8f0;border-radius:7px;padding:6px 18px;cursor:pointer;font-size:12px;">
+                    Got it
+                </button>`;
+            document.body.appendChild(popup);
+            const close = () => popup.remove();
+            popup.querySelector('#cw-unsupported-close').addEventListener('click', close);
+            // Auto-dismiss after 8 s
+            setTimeout(close, 8000);
+        })();
+        sendResponse({ ok: true });
     } else if (msg.action === "DEANONYMIZE_SELECTION") {
         const selectedHtml = getSelectionHtml();
         const content = (selectedHtml && selectedHtml.trim().length > 0) ? selectedHtml : msg.selectionText;

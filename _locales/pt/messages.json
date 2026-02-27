@@ -68,6 +68,42 @@
     "ctx_rem_fav": {
         "message": "Remover Favorito"
     },
+    "ctx_rem_fav_simple": {
+        "message": "Remover dos favoritos"
+    },
+    "ctx_mask_selection": {
+        "message": "Mascarar sele\u00e7\u00e3o"
+    },
+    "ctx_mask_word": {
+        "message": "Mascarar palavra"
+    },
+    "ctx_unmask_token": {
+        "message": "Desmascarar token"
+    },
+    "ctx_unmask_selection": {
+        "message": "Desmascarar sele\u00e7\u00e3o"
+    },
+    "ctx_add_fav_selection": {
+        "message": "Adicionar sele\u00e7\u00e3o aos favoritos"
+    },
+    "ctx_add_fav_word": {
+        "message": "Adicionar aos favoritos"
+    },
+    "ctx_configure_chatwall": {
+        "message": "Configurar ChatWall"
+    },
+    "ctx_use_chatwall": {
+        "message": "Usar ChatWall"
+    },
+    "ctx_unsupported_title": {
+        "message": "ChatWall \u2014 Configurar"
+    },
+    "ctx_unsupported_body": {
+        "message": "\"Configurar ChatWall\" funciona em sites de chat de IA suportados. Navegue para um deles e tente novamente:"
+    },
+    "ctx_got_it": {
+        "message": "Entendido"
+    },
     "ctx_select_all": {
         "message": "Selecionar Tudo"
     },
@@ -209,5 +245,11 @@
     },
     "tooltip_use_chatwall": {
         "message": "Clique para proteger e mascarar estes dados antes de enviar."
+    },
+    "intoverlay_warn_msg": {
+        "message": "Algumas entidades requerem"
+    },
+    "intoverlay_warn_msg2": {
+        "message": "para mascaramento automático — você ainda pode mascara/desmascarar manualmente."
     }
 }

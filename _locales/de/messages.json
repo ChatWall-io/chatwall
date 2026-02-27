@@ -68,6 +68,42 @@
     "ctx_rem_fav": {
         "message": "Favorit entfernen"
     },
+    "ctx_rem_fav_simple": {
+        "message": "Aus Favoriten entfernen"
+    },
+    "ctx_mask_selection": {
+        "message": "Auswahl maskieren"
+    },
+    "ctx_mask_word": {
+        "message": "Wort maskieren"
+    },
+    "ctx_unmask_token": {
+        "message": "Token demaskieren"
+    },
+    "ctx_unmask_selection": {
+        "message": "Auswahl demaskieren"
+    },
+    "ctx_add_fav_selection": {
+        "message": "Auswahl zu Favoriten hinzuf\u00fcgen"
+    },
+    "ctx_add_fav_word": {
+        "message": "Zu Favoriten hinzuf\u00fcgen"
+    },
+    "ctx_configure_chatwall": {
+        "message": "ChatWall konfigurieren"
+    },
+    "ctx_use_chatwall": {
+        "message": "ChatWall verwenden"
+    },
+    "ctx_unsupported_title": {
+        "message": "ChatWall \u2014 Konfigurieren"
+    },
+    "ctx_unsupported_body": {
+        "message": "\"ChatWall konfigurieren\" funktioniert auf unterst\u00fctzten KI-Chat-Seiten. Navigieren Sie zu einer davon und versuchen Sie es erneut:"
+    },
+    "ctx_got_it": {
+        "message": "Verstanden"
+    },
     "ctx_select_all": {
         "message": "Alles auswählen"
     },
@@ -209,5 +245,11 @@
     },
     "tooltip_use_chatwall": {
         "message": "Klicken Sie hier, um diese Daten vor dem Senden zu sichern und zu maskieren."
+    },
+    "intoverlay_warn_msg": {
+        "message": "Einige Entit\u00e4ten ben\u00f6tigen"
+    },
+    "intoverlay_warn_msg2": {
+        "message": "f\u00fcr die automatische Maskierung \u2014 Sie k\u00f6nnen sie weiterhin manuell maskieren/demaskieren."
     }
 }

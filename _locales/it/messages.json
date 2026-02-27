@@ -2,80 +2,74 @@
     "appName": {
         "message": "ChatWall: AI Firewall"
     },
-    "overlay_title": {
-        "message": "ChatWall: AI Firewall"
-    },
-    "btn_upgrade": {
-        "message": "Passa a Premium"
-    },
-    "menu_license": {
-        "message": "Gestione Licenza"
-    },
-    "menu_help": {
-        "message": "Aiuto"
-    },
-    "menu_privacy": {
-        "message": "Privacy e Sicurezza"
-    },
-    "menu_legal": {
-        "message": "Licenza"
-    },
-    "menu_terms": {
-        "message": "Termini di Servizio"
-    },
-    "menu_manage_sub": {
-        "message": "Account"
-    },
-    "menu_about": {
-        "message": "Informazioni su ChatWall"
-    },
-    "panel_original_prompt": {
-        "message": "Prompt Originale (Scrivi qui)"
-    },
-    "placeholder_prompt": {
-        "message": "Scrivi o incolla il tuo prompt qui..."
-    },
-    "panel_anonymized": {
-        "message": "Anonimizzato (Sarà inviato all'IA)"
-    },
-    "title_anonymize_mode": {
-        "message": "Chatta con l'IA. Mantieni i dati privati."
-    },
-    "title_deanonymize_mode": {
-        "message": "Contenuto Deanonimizzato"
-    },
-    "panel_original_preview": {
-        "message": "Contenuto Originale (Anteprima)"
-    },
-    "btn_send": {
-        "message": "Invia al prompt IA"
+    "btn_activate": {
+        "message": "Attiva"
     },
     "btn_cancel": {
         "message": "Annulla"
     },
+    "btn_close": {
+        "message": "Chiudi"
+    },
     "btn_copy": {
         "message": "Copia Contenuto"
     },
-    "plan_label": {
-        "message": "Piano:"
+    "btn_edit_prompt": {
+        "message": "Modifica"
+    },
+    "btn_expand_overlay": {
+        "message": "Espandi pannello"
+    },
+    "btn_manage": {
+        "message": "Gestisci account"
+    },
+    "btn_mask": {
+        "message": "Maschera"
+    },
+    "btn_popup_send_action": {
+        "message": "Invia"
+    },
+    "btn_reset": {
+        "message": "Reimposta Dispositivi"
+    },
+    "btn_send": {
+        "message": "Invia al prompt IA"
+    },
+    "btn_send_masked": {
+        "message": "Invia mascherato"
+    },
+    "btn_unmask": {
+        "message": "Smaschera"
+    },
+    "btn_upgrade": {
+        "message": "Passa a Premium"
+    },
+    "ctx_add_fav": {
+        "message": "Aggiungi ai Preferiti"
     },
     "ctx_copy": {
         "message": "Copia"
     },
-    "ctx_read_docs": {
-        "message": "Leggi Documentazione"
+    "ctx_cut": {
+        "message": "Taglia"
+    },
+    "ctx_mask": {
+        "message": "Maschera"
     },
     "ctx_paste": {
         "message": "Incolla"
     },
-    "ctx_cut": {
-        "message": "Taglia"
+    "ctx_premium_tag": {
+        "message": "(Premium)"
+    },
+    "ctx_read_docs": {
+        "message": "Leggi Documentazione"
+    },
+    "ctx_rem_fav": {
+        "message": "Rimuovi Preferito"
     },
     "ctx_select_all": {
         "message": "Seleziona tutto"
-    },
-    "ctx_mask": {
-        "message": "Maschera"
     },
     "ctx_unmask": {
         "message": "Smaschera"
@@ -86,100 +80,23 @@
     "help_custom_tool_unmask": {
         "message": "Smaschera"
     },
-    "ctx_add_fav": {
-        "message": "Aggiungi ai Preferiti"
-    },
-    "ctx_rem_fav": {
-        "message": "Rimuovi Preferito"
-    },
-    "ctx_premium_tag": {
-        "message": "(Premium)"
-    },
-    "rc_unmask_preview": {
-        "message": "Smaschera (Anteprima)"
-    },
-    "rc_unmask_copy": {
-        "message": "Smaschera e Copia"
-    },
-    "toast_copied": {
-        "message": "Copiato negli appunti!"
-    },
-    "toast_masked_copied": {
-        "message": "Contenuto mascherato copiato negli appunti!"
-    },
-    "tooltip_sensitive_data": {
-        "message": "Dati Sensibili Rilevati!"
-    },
-    "tooltip_mask_action": {
-        "message": "Clicca per proteggere e mascherare il tuo prompt"
-    },
-    "tooltip_use_chatwall": {
-        "message": "Clicca per proteggere e mascherare questi dati prima dell'invio."
-    },
-    "tooltip_response_done": {
-        "message": "Risposta Completata"
-    },
-    "tooltip_click_unmask": {
-        "message": "Fare clic per smascherare e visualizzare.<br>o <b>Tasto Destro</b> (Selezione o Icona Copia)"
-    },
-    "license_settings": {
-        "message": "Impostazioni Licenza"
-    },
     "lbl_email": {
         "message": "Email Account"
     },
     "lbl_key": {
         "message": "Chiave di Licenza"
     },
-    "link_forgot": {
-        "message": "Chiave dimenticata?"
+    "license_button_reset_default": {
+        "message": "⚠️ Resetta Dispositivi Attivi"
     },
-    "link_get_license": {
-        "message": "Ottieni licenza"
+    "license_button_reset_warning": {
+        "message": "Attenzione: Questo disconnetterà tutti gli altri dispositivi che usano questa licenza. Continuare?"
     },
-    "btn_reset": {
-        "message": "Reimposta Dispositivi"
-    },
-    "btn_manage": {
-        "message": "Gestisci account"
-    },
-    "btn_close": {
-        "message": "Chiudi"
-    },
-    "btn_activate": {
-        "message": "Attiva"
-    },
-    "popup_masked_warn_title": {
-        "message": "Contenuto Mascherato Rilevato"
-    },
-    "popup_masked_warn_msg": {
-        "message": "Per inviare, clicca su <b>Annulla</b> e usa il pulsante <b>Invia</b> della chat.<br>Vuoi inviare o modificare?"
-    },
-    "btn_edit_prompt": {
-        "message": "Modifica"
-    },
-    "btn_popup_send_action": {
-        "message": "Invia"
-    },
-    "tooltip_premium_reserved": {
-        "message": "Questo contenuto è riservato agli utenti Premium. Fai l'upgrade per mascherare automaticamente. Puoi ancora mascherare manualmente usando tasto destro o icone maschera."
-    },
-    "tooltip_premium_reserved_safe": {
-        "message": "Questo contenuto è riservato agli utenti Premium. (Login richiesto). Puoi ancora mascherare manualmente usando tasto destro o icone maschera."
+    "license_button_resetting": {
+        "message": "Reimpostazione..."
     },
     "license_msg_fill_required": {
         "message": "Si prega di inserire Email e Chiave di Licenza."
-    },
-    "license_msg_verifying": {
-        "message": "Verifica con il server in corso..."
-    },
-    "license_msg_success": {
-        "message": "Successo! Piano: $PLAN$",
-        "placeholders": {
-            "plan": {
-                "content": "$1"
-            }
-        }
     },
     "license_msg_limit_reached": {
         "message": "⚠️ $MESSAGE$<br><br>Per favore <a href='$LINK_UPGRADE$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>fai l'upgrade</a> o <a href='$LINK_RESET$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>resetta i dispositivi nella dashboard</a>.",
@@ -198,16 +115,99 @@
     "license_msg_network_error": {
         "message": "Connessione di rete fallita. Riprova e controlla la tua connessione internet.<br>Se il problema persiste, contatta support@chatwall.io"
     },
-    "license_button_reset_warning": {
-        "message": "Attenzione: Questo disconnetterà tutti gli altri dispositivi che usano questa licenza. Continuare?"
+    "license_msg_success": {
+        "message": "Successo! Piano: $PLAN$",
+        "placeholders": {
+            "plan": {
+                "content": "$1"
+            }
+        }
     },
-    "license_button_resetting": {
-        "message": "Reimpostazione..."
+    "license_msg_verifying": {
+        "message": "Verifica con il server in corso..."
     },
-    "license_button_reset_default": {
-        "message": "⚠️ Resetta Dispositivi Attivi"
+    "license_settings": {
+        "message": "Impostazioni Licenza"
+    },
+    "link_forgot": {
+        "message": "Chiave dimenticata?"
+    },
+    "link_get_license": {
+        "message": "Ottieni licenza"
+    },
+    "menu_about": {
+        "message": "Informazioni su ChatWall"
+    },
+    "menu_help": {
+        "message": "Aiuto"
+    },
+    "menu_legal": {
+        "message": "Licenza"
+    },
+    "menu_manage_sub": {
+        "message": "Account"
+    },
+    "menu_privacy": {
+        "message": "Privacy e Sicurezza"
+    },
+    "menu_settings": {
+        "message": "Impostazioni"
+    },
+    "menu_terms": {
+        "message": "Termini di Servizio"
+    },
+    "overlay_title": {
+        "message": "ChatWall: Firewall IA"
+    },
+    "panel_anonymized": {
+        "message": "Anonimizzato (Sarà inviato all'IA)"
+    },
+    "panel_original_preview": {
+        "message": "Contenuto Originale (Anteprima)"
+    },
+    "panel_original_prompt": {
+        "message": "Prompt Originale (Scrivi qui)"
+    },
+    "placeholder_prompt": {
+        "message": "Scrivi o incolla il tuo prompt qui..."
+    },
+    "plan_label": {
+        "message": "Piano:"
+    },
+    "popup_masked_warn_msg": {
+        "message": "Per inviare, clicca su <b>Annulla</b> e usa il pulsante <b>Invia</b> della chat.<br>Vuoi inviare o modificare?"
+    },
+    "popup_masked_warn_title": {
+        "message": "Contenuto Mascherato Rilevato"
+    },
+    "title_anonymize_mode": {
+        "message": "Chatta con l'IA. Mantieni i dati privati."
+    },
+    "title_deanonymize_mode": {
+        "message": "Contenuto Deanonimizzato"
+    },
+    "toast_copied": {
+        "message": "Copiato negli appunti!"
+    },
+    "toast_masked_copied": {
+        "message": "Contenuto mascherato copiato negli appunti!"
     },
     "toast_unmasked_copied": {
         "message": "Contenuto smascherato copiato negli appunti"
+    },
+    "tooltip_mask_action": {
+        "message": "Clicca per proteggere e mascherare il tuo prompt"
+    },
+    "tooltip_premium_reserved": {
+        "message": "Questo contenuto è riservato agli utenti Premium. Fai l'upgrade per mascherare automaticamente. Puoi ancora mascherare manualmente usando tasto destro o icone maschera."
+    },
+    "tooltip_premium_reserved_safe": {
+        "message": "Questo contenuto è riservato agli utenti Premium. (Login richiesto). Puoi ancora mascherare manualmente usando tasto destro o icone maschera."
+    },
+    "tooltip_sensitive_data": {
+        "message": "Dati Sensibili Rilevati!"
+    },
+    "tooltip_use_chatwall": {
+        "message": "Clicca per proteggere e mascherare questi dati prima dell'invio."
     }
 }

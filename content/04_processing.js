@@ -8,8 +8,166 @@
 // --- PROCESSING LOGIC ---
 
 
+
+// ─── Shared masking algorithms (used by full overlay + integrated overlay) ────
+
+/**
+ * Score, sort, de-overlap and apply plan-based lock to a pre-merged match array.
+ * @param {string} rawText      Full input text.
+ * @param {Array}  allMatches   Merged NLP + custom + fav matches (mutated in-place).
+ * @param {Set}    ignoredWords Words the user manually unmasked.
+ * @param {string} userPlan     USER_PLAN value ('FREE' or other).
+ * @returns {Array} filteredMatches with isLocked flags set.
+ */
+function scoreAndDeoverlap(rawText, allMatches, ignoredWords, userPlan) {
+    // UUID → ID normalisation
+    allMatches.forEach(m => { if (m.type === 'UUID') m.type = 'ID'; });
+
+    // Contextual name boost
+    allMatches.forEach(m => {
+        if (m.type !== 'NAME') return;
+        const prefix = rawText.substring(Math.max(0, m.start - 20), m.start);
+        if (typeof HONORIFIC_RE !== 'undefined' && HONORIFIC_RE.test(prefix)) { m.hasNameContext = true; return; }
+        for (const other of allMatches) {
+            if (other === m || other.type !== 'NAME') continue;
+            if (other.end >= m.start - 2 && other.end <= m.start) { m.hasNameContext = true; return; }
+            if (other.start >= m.end && other.start <= m.end + 2) { m.hasNameContext = true; return; }
+        }
+    });
+
+    const getScore = m => {
+        const t = (typeof m === 'string') ? m : m.type;
+        if (t === 'FAVORITE') return 130;
+        if (t === 'CUSTOM') return 129;
+        if (t === 'IBAN') return 115;
+        if (t === 'CB') return 110;
+        if (t === 'EMAIL' || t === 'URL') return 105;
+        if (t === 'CVV') return 100;
+        if (t === 'VIN' || t === 'IP' || t === 'MAC' || t === 'PATH') return 98;
+        if (t === 'UUID') return 95;
+        if (t === 'VCS' || t === 'PASSPORT' || t === 'SSN' || t === 'VAT' || t === 'BIC' || t === 'PLATE') return 90;
+        if (t === 'COUNTRY') return 89;
+        if (t === 'GPS') return 87;
+        if (t === 'DATE' || t === 'TIME' || t === 'AMOUNT' || t === 'MONEY') return 86;
+        if (t === 'PHONE') return 85;
+        if (t === 'SECRET' || t === 'KEY' || t === 'PASSWORD' || t === 'PIN' ||
+            t === 'JWT' || t === 'AWS' || t === 'CRYPTO' || t === 'PASS') return 84;
+        if (t === 'ID') return 83;
+        if (t === 'CITY') return 82;
+        if (t === 'NAME') return (m && m.hasNameContext) ? 85 : 80;
+        if (t === 'PERSON') return 80;
+        if (t === 'POSTAL') return 60;
+        return 30;
+    };
+
+    allMatches.sort((a, b) => {
+        if (a.start !== b.start) return a.start - b.start;
+        const sA = getScore(a), sB = getScore(b);
+        if (sA !== sB) return sB - sA;
+        return b.end - a.end;
+    });
+
+    let filteredMatches = [], lastEnd = 0;
+    for (const m of allMatches) {
+        if (m.start >= lastEnd) {
+            filteredMatches.push(m); lastEnd = m.end;
+        } else {
+            const prev = filteredMatches[filteredMatches.length - 1];
+            if (getScore(m) > getScore(prev)) {
+                if (m.start < prev.end) { filteredMatches.pop(); filteredMatches.push(m); lastEnd = m.end; }
+            } else if (m.isNLP && !prev.isNLP && !(prev.type === 'CUSTOM' || prev.type === 'FAVORITE')) {
+                if (m.start <= prev.start && m.end >= prev.end) { filteredMatches.pop(); filteredMatches.push(m); lastEnd = m.end; }
+            }
+        }
+    }
+
+    const plan = (userPlan !== undefined) ? userPlan : (typeof USER_PLAN !== 'undefined' ? USER_PLAN : 'FREE');
+    filteredMatches.forEach(m => {
+        const isUserDef = (m.type === 'CUSTOM' || m.type === 'FAVORITE');
+        if (plan === 'FREE' && typeof ENTITY_TIERS !== 'undefined' && !ENTITY_TIERS.FREE.has(m.type) && !isUserDef) {
+            m.isLocked = true;
+        }
+    });
+
+    return filteredMatches;
+}
+
+/**
+ * Full self-contained pipeline for the integrated overlay:
+ *   raw NLP + word sets → filtered, scored, de-overlapped match array.
+ * The full overlay uses finalizeProcessing (with its partial-scan cache) instead.
+ */
+function buildAllMatches(rawText, nlpMatches, customWords, ignoredWords, favList, userPlan) {
+    const ign = ignoredWords || new Set();
+    let allMatches = [];
+
+    if (nlpMatches && Array.isArray(nlpMatches)) {
+        for (const m of nlpMatches) {
+            if (/^(La|Le|Les|Los|Las|El|Il|Der|Die|Das|The)$/i.test(m.text.trim())) continue;
+            m.isIgnored = ign.has(m.text.trim());
+            if (m.type === 'AMOUNT') m.type = 'MONEY';
+            allMatches.push(m);
+        }
+    }
+
+    (customWords || new Set()).forEach(word => {
+        if (ign.has(word)) return;
+        const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        allMatches.push(...findAllMatches(rawText, re, 'CUSTOM'));
+    });
+
+    (favList || new Set()).forEach(fav => {
+        if (ign.has(fav)) return;
+        const re = new RegExp(fav.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        allMatches.push(...findAllMatches(rawText, re, 'FAVORITE'));
+    });
+
+    return scoreAndDeoverlap(rawText, allMatches, ign, userPlan);
+}
+
+/**
+ * Build a DocumentFragment for the highlights (hl) layer from a filtered match array.
+ * Shared by both overlays — CSS handles colour differences between themes.
+ */
+function buildHighlightFragment(rawText, filteredMatches) {
+    const frag = document.createDocumentFragment();
+    let idx = 0;
+    for (const m of filteredMatches) {
+        if (m.start > idx) frag.appendChild(document.createTextNode(rawText.substring(idx, m.start)));
+        if (m.isIgnored) {
+            frag.appendChild(document.createTextNode(m.text));
+        } else if (m.isLocked) {
+            const span = document.createElement('span');
+            span.className = 'token token-premium';
+            span.title = chrome.i18n.getMessage('tooltip_premium_reserved') || '\uD83D\uDD12 Premium required';
+            span.textContent = m.text;
+            frag.appendChild(span);
+        } else {
+            const span = document.createElement('span');
+            span.className = `token token-${m.type}`;
+            span.setAttribute('data-start', m.start);
+            span.setAttribute('data-is-nlp', m.isNLP ? 'true' : 'false');
+            span.setAttribute('data-type', m.type);
+            span.setAttribute('data-text', m.text);
+            span.textContent = m.text;
+            frag.appendChild(span);
+        }
+        idx = m.end;
+    }
+    if (idx < rawText.length) frag.appendChild(document.createTextNode(rawText.substring(idx)));
+    if (rawText.endsWith('\n\n')) {
+        frag.appendChild(document.createElement('br'));
+        frag.appendChild(document.createElement('br'));
+        frag.appendChild(document.createTextNode('\u00a0'));
+    } else if (rawText.endsWith('\n')) {
+        frag.appendChild(document.createElement('br'));
+        frag.appendChild(document.createTextNode('\u00a0'));
+    }
+    return frag;
+}
+
 async function processText(forceFullScan = false, fromScroll = false, customContextSize = null) {
-    if (!shadowRoot) return;
+    if (!shadowRoot && !_activeSr) return;
 
     if (!elInputText) return;
     const inputText = elInputText;
@@ -62,7 +220,7 @@ async function processText(forceFullScan = false, fromScroll = false, customCont
 }
 
 async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, scanId = 0, skipLocalRegex = false) {
-    if (!shadowRoot) return;
+    if (!shadowRoot && !_activeSr) return;
 
     // Race Condition Guard: If a newer scan has already started, discard this stale result.
     if (scanId !== 0 && scanId !== lastScanId) {
@@ -73,7 +231,7 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
         const inputText = elInputText;
         const outputText = elOutputText;
         const inputHighlights = elInputHighlights;
-        if (!inputText || !outputText) return;
+        if (!inputText) return;
 
         // Fetch tokens for finalization phase
         const tokenMap = await getTokenMap();
@@ -158,122 +316,9 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
 
         allMatches = allMatches.concat(localMatches);
 
-        allMatches.forEach(m => {
-            if (m.type === 'UUID') m.type = 'ID';
-        });
-
-        // --- CONTEXTUAL NAME BOOST ---
-        // If a NAME match has an honorific prefix or an adjacent NAME match,
-        // boost its priority above CITY (85 > 84) so names are preferred over cities in context.
-        // Uses shared HONORIFIC_RE from name.js
-
-        allMatches.forEach(m => {
-            if (m.type !== 'NAME') return;
-            // Check 1: Honorific prefix in the text before this match
-            const prefixWindow = rawText.substring(Math.max(0, m.start - 20), m.start);
-            if (HONORIFIC_RE.test(prefixWindow)) {
-                m.hasNameContext = true;
-                return;
-            }
-            // Check 2: Adjacent NAME match (immediately before or after, allowing spaces)
-            for (const other of allMatches) {
-                if (other === m || other.type !== 'NAME') continue;
-                // other ends near m.start (adjacent before)
-                if (other.end >= m.start - 2 && other.end <= m.start) {
-                    m.hasNameContext = true;
-                    return;
-                }
-                // other starts near m.end (adjacent after)
-                if (other.start >= m.end && other.start <= m.end + 2) {
-                    m.hasNameContext = true;
-                    return;
-                }
-            }
-        });
-
-        // Unified Scoring Logic (Synced with background.js)
-        const getScore = (m) => {
-            const t = (typeof m === 'string') ? m : m.type;
-            if (t === 'FAVORITE') return 130;
-            if (t === 'CUSTOM') return 129;
-
-            if (t === 'IBAN') return 115;
-            if (t === 'CB') return 110;
-            if (t === 'EMAIL') return 105;
-            if (t === 'URL') return 105;
-            if (t === 'CVV') return 100;
-
-            if (t === 'UUID') return 95;
-            if (t === 'VIN') return 98;
-            if (t === 'IP' || t === 'MAC' || t === 'PATH') return 98;
-
-            if (t === 'VCS' || t === 'PASSPORT' || t === 'SSN' || t === 'VAT' || t === 'BIC' || t === 'PLATE') return 90;
-
-            if (t === 'COUNTRY') return 89;
-
-            if (t === 'GPS') return 87;
-            if (t === 'DATE') return 86;
-            if (t === 'TIME') return 86;
-            if (t === 'AMOUNT') return 86;
-            if (t === 'MONEY') return 86;
-            if (t === 'PHONE') return 85;
-            if (t === 'SECRET' || t === 'KEY' || t === 'PASSWORD' || t === 'PIN' || t === 'JWT' || t === 'AWS' || t === 'CRYPTO' || t === 'PASS') return 84;
-            if (t === 'ID') return 83;
-            if (t === 'CITY') return 82;
-            if (t === 'NAME') return (m && m.hasNameContext) ? 85 : 80;
-            if (t === 'PERSON') return 80;
-
-            if (t === 'POSTAL') return 60;
-
-            return 30; // Default matches background "low-ish"
-        };
-
-        allMatches.sort((a, b) => {
-            if (a.start !== b.start) return a.start - b.start;
-            // Higher score first
-            const scoreA = getScore(a);
-            const scoreB = getScore(b);
-            if (scoreA !== scoreB) return scoreB - scoreA;
-            return b.end - a.end;
-        });
-
-        // Filter overlapping
-        let filteredMatches = [];
-        let lastEnd = 0;
-        for (let m of allMatches) {
-            if (m.start >= lastEnd) {
-                filteredMatches.push(m);
-                lastEnd = m.end;
-            }
-            else {
-                let prev = filteredMatches[filteredMatches.length - 1];
-
-                // Use scoring to decide whether to replace an existing overlapping match.
-                if (getScore(m) > getScore(prev)) {
-                    if (m.start < prev.end) {
-                        filteredMatches.pop();
-                        filteredMatches.push(m);
-                        lastEnd = m.end;
-                    }
-                }
-                else if (m.isNLP && !prev.isNLP && !(prev.type === 'CUSTOM' || prev.type === 'FAVORITE')) {
-                    if (m.start <= prev.start && m.end >= prev.end) {
-                        filteredMatches.pop();
-                        filteredMatches.push(m);
-                        lastEnd = m.end;
-                    }
-                }
-            }
-        }
+        // ── SHARED algorithm: score + de-overlap + apply plan lock ─────────────
+        const filteredMatches = scoreAndDeoverlap(rawText, allMatches, ignoredEntities, USER_PLAN);
         currentMatches = filteredMatches;
-
-        filteredMatches.forEach(m => {
-            // Enforce tiers...
-            const isUserDef = (m.type === 'CUSTOM' || m.type === 'FAVORITE');
-            if (USER_PLAN === 'FREE' && !ENTITY_TIERS.FREE.has(m.type) && !isUserDef) {
-                m.isLocked = true;
-            }
-        });
 
         // --- FINGERPRINT: Skip expensive re-render if matches unchanged ---
         const fingerprint = filteredMatches.length + ':' + rawText.length + ':' +
@@ -405,8 +450,10 @@ async function finalizeProcessing(nlpMatches, scanOffset = 0, scanLength = 0, sc
         }
 
         // Single DOM update: clear + append (one reflow each)
-        outputText.textContent = '';
-        outputText.appendChild(safeFrag);
+        if (outputText) {
+            outputText.textContent = '';
+            outputText.appendChild(safeFrag);
+        }
         if (inputHighlights) {
             inputHighlights.textContent = '';
             inputHighlights.appendChild(hlFrag);
@@ -536,3 +583,69 @@ function handleOptimisticInput(inputText) {
     // Pass 0 as scanId to bypass race condition guard (we want to force this sync update)
     finalizeProcessing(shiftedMatches, 0, 0, 0);
 }
+
+
+// ─── Overlay context switching ────────────────────────────────────────────────
+// Allows the integrated overlay (13_input_overlay.js) to reuse processText /
+// finalizeProcessing by temporarily pointing the shared element globals at the
+// integrated overlay's shadow DOM elements.  The overlays are mutually exclusive
+// (expand/collapse moves between them), so swapping globals is safe.
+
+let _savedFullCtx = null;
+let _activeSr = null;   // integrated overlay SR (never replaces shadowRoot)
+
+/**
+ * Switch the shared scan pipeline to the integrated overlay.
+ * Call this once the integrated overlay's shadow DOM elements are ready.
+ *
+ * @param {ShadowRoot} sr   - inputOverlayShadowRoot
+ * @param {Element}    ta   - #cwio-ta (textarea)
+ * @param {Element}    hl   - #cwio-hl (highlights layer)
+ * @param {Set}        cw   - inputCustomWords  (per-session custom masks)
+ * @param {Set}        iw   - inputIgnoredWords (per-session ignore list)
+ */
+function activateIntOverlayCtx(sr, ta, hl, cw, iw, outEl = null) {
+    if (!_savedFullCtx) {
+        _savedFullCtx = {
+            elInputText, elOutputText, elInputHighlights,
+            manualBlockList, ignoredEntities,
+            cachedNlpMatches, cachedLocalMatches, cachedLocalMatchesTextKey,
+            lastScanId, lastRenderFingerprint, lastInputText,
+        };
+    }
+    _activeSr = sr;   // mark pipeline as int-overlay active; shadowRoot stays unchanged
+    elInputText = ta;
+    elOutputText = outEl;   // hidden output sink (null if not provided)
+    elInputHighlights = hl;
+    manualBlockList = cw;     // per-session Set — forEach works on both Array and Set
+    ignoredEntities = iw;     // per-session Set
+    // Reset scan state for this fresh session
+    cachedNlpMatches = [];
+    cachedLocalMatches = null;
+    cachedLocalMatchesTextKey = '';
+    lastScanId = 0;
+    lastRenderFingerprint = '';
+    lastInputText = '';
+    cachedLockedTokens = null;
+    currentMatches = [];
+}
+
+/**
+ * Restore the shared scan pipeline to the full overlay.
+ * Call this when the integrated overlay closes.
+ */
+function deactivateIntOverlayCtx() {
+    if (!_savedFullCtx) return;
+    ({
+        elInputText, elOutputText, elInputHighlights,
+        manualBlockList, ignoredEntities,
+        cachedNlpMatches, cachedLocalMatches, cachedLocalMatchesTextKey,
+        lastScanId, lastRenderFingerprint, lastInputText,
+    } = _savedFullCtx);
+    _savedFullCtx = null;
+    _activeSr = null;
+    // Invalidate fingerprint so full overlay re-renders cleanly after it re-opens
+    lastRenderFingerprint = '';
+    cachedLockedTokens = null;
+}
+

@@ -48,7 +48,10 @@ function extractTextFromElement(target, isReEdit = false) {
         text = target.value;
         isValue = true;
     } else if (target.isContentEditable || (target.getAttribute && target.getAttribute('contenteditable') === 'true')) {
-        text = target.innerText || target.textContent || "";
+        // Walk the DOM to reconstruct text with proper paragraph boundaries.
+        // Using innerText alone is unreliable: Chrome collapses or adds newlines
+        // differently depending on the CSS and nesting depth.
+        text = extractContentEditableText(target);
     } else {
         text = target.innerText || target.value || "";
     }
@@ -69,6 +72,46 @@ function extractTextFromElement(target, isReEdit = false) {
         return text.replace(/\n{2,}/g, (m) => (m.length >= 4 ? '\n\n' : '\n')).trim();
     }
 }
+
+/**
+ * Walk a contenteditable element's DOM and reconstruct the plain text,
+ * preserving line breaks created by <br>, <p>, and block <div> elements.
+ */
+function extractContentEditableText(el) {
+    let out = '';
+
+    function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            out += node.textContent;
+            return;
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+        const tag = node.tagName.toUpperCase();
+
+        if (tag === 'BR') {
+            out += '\n';
+            return;
+        }
+
+        // Block-level elements: wrap with newline before/after
+        const isBlock = /^(P|DIV|LI|H[1-6]|BLOCKQUOTE|PRE|TR|TD|TH)$/.test(tag);
+        if (isBlock && out.length > 0 && !out.endsWith('\n')) {
+            out += '\n';
+        }
+
+        for (const child of node.childNodes) walk(child);
+
+        if (isBlock && !out.endsWith('\n')) {
+            out += '\n';
+        }
+    }
+
+    walk(el);
+    // Normalize: collapse 3+ consecutive newlines to 2, trim edges
+    return out.replace(/\n{3,}/g, '\n\n');
+}
+
 
 function getSelectionHtml() {
     let html = "";
@@ -240,3 +283,109 @@ const getLockedTokens = () => {
     });
     return locked;
 };
+
+// ─── Native element writer ───────────────────────────────────────────────────
+/**
+ * Write `text` into `el` (textarea / input / contenteditable) with correct
+ * line-break handling for each browser/framework combination.
+ * Used by both sendToLLM (full overlay) and sendMasked (integrated overlay)
+ * so the same insertion strategy is shared in one place.
+ */
+function writeToNativeEl(el, text) {
+    if (!el) return;
+
+    // ── Plain textarea / input ────────────────────────────────────────────────
+    if (typeof el.value === 'string') {
+        // Use native prototype setter to bypass React / framework value tracking.
+        // Simply assigning el.value doesn't update React's internal state, so the
+        // framework won't "see" the new text and pressing Send would send nothing.
+        // NOTE: do NOT call el.focus() here — that triggers React's onFocus which
+        // may reset the controlled-input state to '' before our value lands.
+        // The caller is responsible for focusing in a prior animation frame.
+        const proto = el instanceof HTMLTextAreaElement
+            ? HTMLTextAreaElement.prototype
+            : HTMLInputElement.prototype;
+        const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+        if (nativeSetter) {
+            nativeSetter.call(el, text);
+        } else {
+            el.value = text;              // fallback
+        }
+        el.dispatchEvent(new InputEvent('input', {
+            inputType: 'insertText', data: text, bubbles: true, cancelable: true,
+        }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        return;
+    }
+
+    // ── contenteditable ──────────────────────────────────────────────────────
+    if (!el.isContentEditable) return;
+
+    const isGemini = /google\.com|gemini/i.test(window.location.hostname);
+    const isClaude = /claude\.ai/i.test(window.location.hostname);
+    const isFirefox = /firefox/i.test(navigator.userAgent);
+
+    // Focus FIRST so the browser knows where to put the cursor.
+    el.focus();
+    // Select all existing content via the editor's own mechanism.
+    // This is ProseMirror/React-friendly: we never touch the DOM children directly.
+    document.execCommand('selectAll', false, null);
+
+    let success = false;
+
+    if (isClaude) {
+        // Claude ProseMirror: replace selection with per-line <p> tags
+        const html = text.split('\n').map(l => `<p>${escapeHtml(l) || '<br>'}</p>`).join('');
+        success = document.execCommand('insertHTML', false, html);
+    } else if (isGemini) {
+        const html = `<span style="white-space:pre-wrap">${escapeHtml(text)}</span>`;
+        success = document.execCommand('insertHTML', false, html);
+        console.log('[ChatWall writeToNativeEl] Gemini — execCommand result:', success);
+    } else if (isFirefox) {
+        const html = escapeHtml(text).replace(/\n/g, '<br>');
+        success = document.execCommand('insertHTML', false, html);
+    } else {
+        // Chrome / Edge: try insertText first (preserves line breaks in most editors)
+        success = document.execCommand('insertText', false, text);
+
+        if (!success) {
+            // Fallback: Range API with text nodes + <br>
+            try {
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+                    const lines = text.split('\n');
+                    const frag = document.createDocumentFragment();
+                    let lastNode = null;
+                    lines.forEach((line, i) => {
+                        if (line) { const t = document.createTextNode(line); frag.appendChild(t); lastNode = t; }
+                        if (i < lines.length - 1) { const br = document.createElement('br'); frag.appendChild(br); lastNode = br; }
+                    });
+                    if (!lastNode) { lastNode = document.createTextNode(''); frag.appendChild(lastNode); }
+                    range.deleteContents();
+                    range.insertNode(frag);
+                    range.setStartAfter(lastNode);
+                    range.setEndAfter(lastNode);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    success = true;
+                }
+            } catch (_) { /* fall through */ }
+        }
+
+        if (!success) {
+            // Last resort: innerHTML (loses some editor state but content gets in)
+            el.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
+            success = true;
+        }
+    }
+
+    if (!success) {
+        console.log('[ChatWall writeToNativeEl] ALL METHODS FAILED — falling back to innerText');
+        el.innerText = text;
+    }
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    console.log('[ChatWall writeToNativeEl] DONE — final innerText len:', el.innerText?.length);
+}
+

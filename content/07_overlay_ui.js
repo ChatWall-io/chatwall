@@ -8,6 +8,8 @@
 // --- OVERLAY UI ---
 
 let currentOverlayMode = 'anonymize';
+// Guard so sendToLLM can tell hideOverlay not to copy back to the integrated textarea
+let fullOverlaySending = false;
 
 function createOverlay() {
     return new Promise((resolve, reject) => {
@@ -42,8 +44,8 @@ function createOverlay() {
             html = localizeHtml(html);
 
             // OPTIMIZATION: Perform string replacements BEFORE creating DOM to avoid layout reflows and Safari security blocks
-            const logoUrl = chrome.runtime.getURL('logo_t.png');
-            html = html.replace('src="logo_t.png"', `src="${logoUrl}"`);
+            const logoUrl = chrome.runtime.getURL('logo.svg');
+            html = html.replace('src="logo.svg"', `src="${logoUrl}"`);
             html = html.replace(/http:\/\/localhost:3000/g, CONFIG_API_URL);
 
             const wrapper = document.createElement('div');
@@ -63,6 +65,9 @@ function createOverlay() {
 
 function showOverlay(content, mode = 'anonymize', isHTML = false) {
     currentOverlayMode = mode;
+
+    // Hide any floating ChatWall buttons — they must not appear on top of the overlay
+    if (typeof hideAllFloatButtons === 'function') hideAllFloatButtons();
 
     overlayContainer.style.display = 'block';
     overlayContainer.style.pointerEvents = 'auto';
@@ -98,6 +103,14 @@ function showOverlay(content, mode = 'anonymize', isHTML = false) {
     if (btnOverlayCopy) btnOverlayCopy.style.display = 'none';
     if (btnOverlayClose) btnOverlayClose.style.display = 'none';
     if (copyBtnHeader) copyBtnHeader.style.display = 'flex';
+
+    // Show minimize button only when integrated overlay is available
+    const btnMinimize = shadowRoot.getElementById('btnMinimize');
+    if (btnMinimize) {
+        const hasIntegrated = typeof cwInputMode !== 'undefined' &&
+            (cwInputMode === 'integrated' || cwInputMode === 'both');
+        btnMinimize.style.display = hasIntegrated ? 'inline-flex' : 'none';
+    }
 
     if (outputText) {
         outputText.classList.remove('html-content');
@@ -150,6 +163,28 @@ function hideOverlay() {
 
     const responseMenu = shadowRoot.getElementById('responseContextMenu');
     if (responseMenu) responseMenu.style.display = 'none';
+
+    // When the full overlay is closed (not sent), reopen the integrated
+    // overlay with the unmasked text so the user can continue editing.
+    if (!fullOverlaySending &&
+        typeof cwInputMode !== 'undefined' &&
+        (cwInputMode === 'both' || cwInputMode === 'integrated') &&
+        typeof elInputText !== 'undefined' && elInputText) {
+        const fullText = elInputText.value;
+        const nativeEl = (typeof lastRightClickedElement !== 'undefined' && lastRightClickedElement);
+        if (fullText && nativeEl && typeof showInputOverlay === 'function') {
+            // forceOverlayOpen bypasses the badge-first UX — opens overlay directly
+            if (typeof forceOverlayOpen !== 'undefined') forceOverlayOpen = true;
+            showInputOverlay(nativeEl);
+            setTimeout(() => {
+                if (typeof inputOverlayInputText !== 'undefined' && inputOverlayInputText) {
+                    inputOverlayInputText.value = fullText;
+                    // Trigger integrated overlay's input handler to rebuild highlights
+                    inputOverlayInputText.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }, 150);
+        }
+    }
 }
 
 function showToast(message, type = 'info') {
@@ -177,6 +212,54 @@ function showToast(message, type = 'info') {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         }, 300);
     }, 3000);
+}
+
+/**
+ * Show a small positioned toast above `anchorEl` on the page.
+ * Falls back to fixed top-right showToast if no element given.
+ */
+function showToastNear(message, anchorEl, type = 'success') {
+    const bg = type === 'error' ? '#ef4444' : '#22c55e';
+    const toast = document.createElement('div');
+    Object.assign(toast.style, {
+        position: 'fixed',
+        zIndex: '2147483647',
+        background: bg,
+        color: '#fff',
+        padding: '6px 13px',
+        borderRadius: '6px',
+        fontSize: '12px',
+        fontWeight: '600',
+        fontFamily: 'system-ui, sans-serif',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+        pointerEvents: 'none',
+        opacity: '0',
+        transition: 'opacity 0.2s ease, transform 0.2s ease',
+        whiteSpace: 'nowrap',
+    });
+    toast.textContent = message;
+
+    if (anchorEl) {
+        const rect = anchorEl.getBoundingClientRect();
+        toast.style.left = Math.round(rect.left + rect.width / 2) + 'px';
+        toast.style.top = Math.round(rect.top - 36) + 'px';
+        toast.style.transform = 'translateX(-50%) translateY(4px)';
+    } else {
+        // Fixed top-right fallback (no shadow root needed)
+        toast.style.right = '20px';
+        toast.style.top = '60px';
+        toast.style.transform = 'translateY(-6px)';
+    }
+
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = anchorEl ? 'translateX(-50%) translateY(0)' : 'translateY(0)';
+    });
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 250);
+    }, 2500);
 }
 
 function showResponseToast(message, x, y) {

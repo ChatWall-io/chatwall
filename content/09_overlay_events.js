@@ -59,6 +59,9 @@ function initOverlayEvents() {
     const closeBtn = shadowRoot.getElementById('closeBtn');
     if (closeBtn) closeBtn.addEventListener('click', hideOverlay);
 
+    const btnMinimize = shadowRoot.getElementById('btnMinimize');
+    if (btnMinimize) btnMinimize.addEventListener('click', hideOverlay);
+
     const sendBtn = shadowRoot.getElementById('sendBtn');
     if (sendBtn) sendBtn.addEventListener('click', sendToLLM);
 
@@ -681,28 +684,33 @@ function initOverlayEvents() {
 
         inputText.addEventListener('click', (e) => {
             inputText.style.pointerEvents = 'none';
-            const elem = shadowRoot.elementFromPoint(e.clientX, e.clientY);
-            inputText.style.pointerEvents = 'auto';
-            if (elem && elem.classList.contains('token-locked')) {
-                window.open(CONFIG_API_URL + '/#pricing', '_blank');
-            } else if (elem && elem.classList.contains('token')) {
-                if (activeTool === 'unmask') {
-                    const originalText = elem.getAttribute('data-text');
-                    if (originalText) {
-                        ignoredEntities.add(originalText);
-                        if (favoritesList.has(originalText)) {
-                            favoritesList.delete(originalText);
-                            saveFavorites();
+            try {
+                if (!shadowRoot) return;  // guard against ctx-switch null
+                const elem = shadowRoot.elementFromPoint(e.clientX, e.clientY);
+                if (elem && elem.classList.contains('token-locked')) {
+                    window.open(CONFIG_API_URL + '/#pricing', '_blank');
+                } else if (elem && elem.classList.contains('token')) {
+                    if (activeTool === 'unmask') {
+                        const originalText = elem.getAttribute('data-text');
+                        if (originalText) {
+                            ignoredEntities.add(originalText);
+                            if (favoritesList.has(originalText)) {
+                                favoritesList.delete(originalText);
+                                saveFavorites();
+                            }
+                            cachedLocalMatches = null;
+                            processText(true);
                         }
-                        cachedLocalMatches = null; // Invalidate local regex cache
-                        processText(true);
                     }
                 }
+            } finally {
+                inputText.style.pointerEvents = 'auto';  // ALWAYS restore, even if above threw
             }
         });
 
         const premiumTooltip = shadowRoot.getElementById('premiumTooltip');
         inputText.addEventListener('mousemove', (e) => {
+            if (!shadowRoot) return;  // guard against ctx-switch null
             const elements = shadowRoot.elementsFromPoint(e.clientX, e.clientY);
             const lockedToken = elements.find(el => el.classList.contains('token-locked'));
 

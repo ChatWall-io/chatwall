@@ -10,6 +10,74 @@
 
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/**
+ * Factory: creates an isolated masking state (customWords, ignoredWords) with shared
+ * match-merge algorithm. Used by both overlays to eliminate duplicated merge logic.
+ */
+function makeMaskingContext(opts = {}) {
+    const customWords = opts.customWords || new Set();
+    const ignoredWords = opts.ignoredWords || new Set();
+
+    return {
+        get customWords() { return customWords; },
+        get ignoredWords() { return ignoredWords; },
+
+        mask(word) {
+            word = (word || '').trim();
+            if (!word) return;
+            customWords.add(word);
+            ignoredWords.delete(word);
+        },
+
+        unmask(word) {
+            word = (word || '').trim();
+            if (!word) return;
+            customWords.delete(word);
+            ignoredWords.add(word);
+        },
+
+        // Return Match[] for all custom-masked words in rawText
+        getWordMatches(text) {
+            const out = [];
+            for (const w of customWords) {
+                const re = new RegExp(escapeRegex(w), 'gi');
+                let m;
+                while ((m = re.exec(text)) !== null)
+                    out.push({ text: m[0], type: 'CUSTOM', start: m.index, end: m.index + m[0].length });
+            }
+            return out;
+        },
+
+        // Merge favorites > custom > nlp, de-overlap by priority (left-to-right, long wins ties)
+        buildHighlights(rawText, nlpMatches, optFavorites) {
+            const favs = optFavorites ||
+                (typeof favoritesList !== 'undefined' ? favoritesList : new Set());
+
+            const favMatches = [];
+            for (const w of favs) {
+                const re = new RegExp(escapeRegex(w), 'gi');
+                let m;
+                while ((m = re.exec(rawText)) !== null)
+                    favMatches.push({ text: m[0], type: 'FAVORITE', start: m.index, end: m.index + m[0].length });
+            }
+
+            const customMatches = this.getWordMatches(rawText);
+            const nlpFiltered = (nlpMatches || []).filter(m => !ignoredWords.has(m.text));
+
+            const all = [...favMatches, ...customMatches, ...nlpFiltered]
+                .sort((a, b) => a.start !== b.start ? a.start - b.start : (b.end - b.start) - (a.end - a.start));
+
+            const filtered = [];
+            let lastEnd = 0;
+            for (const m of all) {
+                if (m.start >= lastEnd) { filtered.push(m); lastEnd = m.end; }
+            }
+            return filtered;
+        }
+    };
+}
+
+
 function handleMaskAction(text) {
     if (!text) return;
     text = text.trim();
@@ -128,120 +196,66 @@ async function handleUnmaskAction(text, targetMatch, start = null, end = null) {
 }
 
 function sendToLLM() {
-    let finalMessage = elOutputText.innerText;
-    const targetElement = activeTarget;
-    if (targetElement) {
-        if (targetElement.value !== undefined) {
-            targetElement.value = finalMessage;
-            targetElement.dispatchEvent(new Event('input', { bubbles: true }));
-        } else if (targetElement.isContentEditable) {
-            targetElement.focus();
-            while (targetElement.firstChild) {
-                targetElement.removeChild(targetElement.firstChild);
-            }
-            const isGemini = window.location.hostname.includes('google.com') || window.location.hostname.includes('gemini');
-            const isClaude = window.location.hostname.includes('claude.ai');
-            const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-            let success = false;
+    const finalMessage = elOutputText.innerText;
+    let targetElement = activeTarget;
 
-            if (isClaude && isFirefox) {
-                // Claude Fix: Paragraph injection strategy.
-                // We wrap each line in a <p> tag to ensure the editor respects structure.
-                const lines = finalMessage.split('\n');
-                const htmlLines = lines.map(line => {
-                    const safe = escapeHtml(line);
-                    return `<p>${safe || '<br>'}</p>`;
-                });
-                const html = htmlLines.join('');
-                success = document.execCommand('insertHTML', false, html);
-            } else if (isGemini) {
-                const safeText = escapeHtml(finalMessage);
-                const html = `<span style="white-space: pre-wrap;">${safeText}</span>`;
-                success = document.execCommand('insertHTML', false, html);
-            } else if (isFirefox) {
-                // Firefox Fix for others (ChatGPT etc): insertText strips newlines. 
-                // We force <br> injection.
-                const safeText = escapeHtml(finalMessage).replace(/\n/g, '<br>');
-                success = document.execCommand('insertHTML', false, safeText);
-            } else {
-                // Optimization: For large text, avoid execCommand('insertText') which freezes the browser
-                // due to synchronous editor processing. Direct DOM manipulation is instant.
-                if (finalMessage.length > 5000) {
-                    const safeText = escapeHtml(finalMessage).replace(/\n/g, '<br>');
-                    targetElement.innerHTML = `<p>${safeText}</p>`;
-                    targetElement.dispatchEvent(new Event('input', { bubbles: true }));
-                    success = true;
-                } else {
-                    // FIX: Use Range API instead of execCommand to avoid Clipboard interference
-                    try {
-                        const sel = window.getSelection();
-                        if (sel.rangeCount > 0) {
-                            // FIX: Handle newlines manually by inserting BR tags
-                            const range = sel.getRangeAt(0);
-                            const lines = finalMessage.split('\n');
-                            const fragment = document.createDocumentFragment();
-                            let lastNode = null;
+    fullOverlaySending = true; // tell hideOverlay not to copy back to integrated
+    hideOverlay();
+    fullOverlaySending = false;
 
-                            lines.forEach((line, index) => {
-                                if (line) {
-                                    const tNode = document.createTextNode(line);
-                                    fragment.appendChild(tNode);
-                                    lastNode = tNode;
-                                }
-                                if (index < lines.length - 1) {
-                                    const br = document.createElement('br');
-                                    fragment.appendChild(br);
-                                    lastNode = br;
-                                }
-                            });
+    // When both overlays are open, also dismiss the integrated overlay
+    // using the dedicated function that does NOT overwrite the native element
+    // (sendToLLM has already put the correct masked content there).
+    if (typeof inputOverlayIsOpen !== 'undefined' && inputOverlayIsOpen &&
+        typeof dismissInputOverlayAfterSend === 'function') {
+        dismissInputOverlayAfterSend();
+    }
 
-                            if (!lastNode && lines.length > 0) {
-                                // Empty content case?
-                                const tNode = document.createTextNode("");
-                                fragment.appendChild(tNode);
-                                lastNode = tNode;
-                            }
+    if (!targetElement) return;
 
-                            range.deleteContents();
-                            range.insertNode(fragment);
+    // Write the masked text in two animation frames so the overlay DOM is fully
+    // removed before we attempt to focus and write (same pattern as sendMasked).
+    requestAnimationFrame(() => {
+        // Re-validate target is still live
+        if (!document.body.contains(targetElement)) {
+            const fresh = findMainInput();
+            if (fresh) targetElement = fresh;
+        }
 
-                            // Move cursor after
-                            if (lastNode) {
-                                range.setStartAfter(lastNode);
-                                range.setEndAfter(lastNode);
-                            }
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-
-                            targetElement.dispatchEvent(new Event('input', { bubbles: true }));
-                            success = true;
-                        } else {
-                            // Fallback if no selection
-                            success = document.execCommand('insertText', false, finalMessage);
-                        }
-                    } catch (e) {
-                        success = document.execCommand('insertText', false, finalMessage);
-                    }
-                }
-            }
-
-            if (!success) {
-                targetElement.innerText = finalMessage;
-                targetElement.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        } else {
-            const child = targetElement.querySelector('input, textarea');
-            if (child) {
-                child.value = finalMessage;
-                child.dispatchEvent(new Event('input', { bubbles: true }));
-                lastMaskedContent = finalMessage;
+        // Focus the target. On Claude.ai findMainInput() may return a hidden backing
+        // TEXTAREA that cannot receive browser focus (the real editor is a
+        // contenteditable ProseMirror div). If focus silently fails, fall back to the
+        // first visible focusable contenteditable — same logic as sendMasked.
+        targetElement.focus();
+        if (document.activeElement !== targetElement && document.activeElement === document.body) {
+            const candidates = Array.from(
+                document.querySelectorAll('[contenteditable="true"], [contenteditable=""], [role="textbox"]')
+            ).filter(el => {
+                const r = el.getBoundingClientRect();
+                return r.width > 0 && r.height > 0;
+            });
+            for (const c of candidates) {
+                c.focus();
+                if (document.activeElement === c) { targetElement = c; break; }
             }
         }
-    } else if (targetElement) {
-        lastMaskedContent = finalMessage;
-    }
-    hideOverlay();
+
+        const isClaude = /claude\.ai/i.test(window.location.hostname);
+        const needsExtraSettle = isClaude && targetElement.isContentEditable;
+
+        const doWrite = () => {
+            writeToNativeEl(targetElement, finalMessage);
+            targetElement.focus();
+        };
+
+        if (needsExtraSettle) {
+            setTimeout(doWrite, 80);
+        } else {
+            requestAnimationFrame(doWrite);
+        }
+    });
 }
+
 
 async function handleShowOverlay(overrideContent = null, preservedManualBlocks = []) {
     if (!isStorageLoaded) {

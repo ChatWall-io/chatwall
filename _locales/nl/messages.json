@@ -2,80 +2,74 @@
     "appName": {
         "message": "ChatWall: AI Firewall"
     },
-    "overlay_title": {
-        "message": "ChatWall: AI Firewall"
-    },
-    "btn_upgrade": {
-        "message": "Upgrade naar Premium"
-    },
-    "menu_license": {
-        "message": "Licentiebeheer"
-    },
-    "menu_help": {
-        "message": "Hulp"
-    },
-    "menu_privacy": {
-        "message": "Privacy & Beveiliging"
-    },
-    "menu_legal": {
-        "message": "Licentie"
-    },
-    "menu_terms": {
-        "message": "Servicevoorwaarden"
-    },
-    "menu_manage_sub": {
-        "message": "Account"
-    },
-    "menu_about": {
-        "message": "Over ChatWall"
-    },
-    "panel_original_prompt": {
-        "message": "Originele Prompt (Schrijf hier)"
-    },
-    "placeholder_prompt": {
-        "message": "Typ of plak je prompt hier..."
-    },
-    "panel_anonymized": {
-        "message": "Geanonimiseerd (Wordt verstuurd naar AI)"
-    },
-    "title_anonymize_mode": {
-        "message": "Chat met AI. Houd gegevens privé."
-    },
-    "title_deanonymize_mode": {
-        "message": "Gedemaskeerde inhoud"
-    },
-    "panel_original_preview": {
-        "message": "Originele inhoud (voorbeeld)"
-    },
-    "btn_send": {
-        "message": "Verstuur naar AI-prompt"
+    "btn_activate": {
+        "message": "Activeren"
     },
     "btn_cancel": {
         "message": "Annuleren"
     },
+    "btn_close": {
+        "message": "Sluiten"
+    },
     "btn_copy": {
         "message": "Inhoud Kopiëren"
     },
-    "plan_label": {
-        "message": "Plan:"
+    "btn_edit_prompt": {
+        "message": "Bewerken"
+    },
+    "btn_expand_overlay": {
+        "message": "Paneel uitvouwen"
+    },
+    "btn_manage": {
+        "message": "Account beheren"
+    },
+    "btn_mask": {
+        "message": "Maskeren"
+    },
+    "btn_popup_send_action": {
+        "message": "Verzenden"
+    },
+    "btn_reset": {
+        "message": "Apparaten Resetten"
+    },
+    "btn_send": {
+        "message": "Verstuur naar AI-prompt"
+    },
+    "btn_send_masked": {
+        "message": "Gemaskerd verzenden"
+    },
+    "btn_unmask": {
+        "message": "Demaskeren"
+    },
+    "btn_upgrade": {
+        "message": "Upgrade naar Premium"
+    },
+    "ctx_add_fav": {
+        "message": "Toevoegen aan Favorieten"
     },
     "ctx_copy": {
         "message": "Kopiëren"
     },
-    "ctx_read_docs": {
-        "message": "Lees documentatie"
+    "ctx_cut": {
+        "message": "Knippen"
+    },
+    "ctx_mask": {
+        "message": "Maskeren"
     },
     "ctx_paste": {
         "message": "Plakken"
     },
-    "ctx_cut": {
-        "message": "Knippen"
+    "ctx_premium_tag": {
+        "message": "(Premium)"
+    },
+    "ctx_read_docs": {
+        "message": "Lees documentatie"
+    },
+    "ctx_rem_fav": {
+        "message": "Verwijder Favoriet"
     },
     "ctx_select_all": {
         "message": "Alles selecteren"
-    },
-    "ctx_mask": {
-        "message": "Maskeren"
     },
     "ctx_unmask": {
         "message": "Demaskeren"
@@ -86,100 +80,23 @@
     "help_custom_tool_unmask": {
         "message": "Demaskeren"
     },
-    "ctx_add_fav": {
-        "message": "Toevoegen aan Favorieten"
-    },
-    "ctx_rem_fav": {
-        "message": "Verwijder Favoriet"
-    },
-    "ctx_premium_tag": {
-        "message": "(Premium)"
-    },
-    "rc_unmask_preview": {
-        "message": "Demaskeren (Voorbeeld)"
-    },
-    "rc_unmask_copy": {
-        "message": "Demaskeren & Kopiëren"
-    },
-    "toast_copied": {
-        "message": "Gekopieerd naar klembord!"
-    },
-    "toast_masked_copied": {
-        "message": "Gemaskeerde inhoud gekopieerd naar klembord!"
-    },
-    "tooltip_sensitive_data": {
-        "message": "Gevoelige gegevens gedetecteer!"
-    },
-    "tooltip_mask_action": {
-        "message": "Klik om uw prompt te beveiligen en te maskeren"
-    },
-    "tooltip_use_chatwall": {
-        "message": "Klik om deze gegevens te beveiligen en te maskeren voor verzending."
-    },
-    "tooltip_response_done": {
-        "message": "Antwoord Voltooid"
-    },
-    "tooltip_click_unmask": {
-        "message": "Klik om te ontmaskeren en te bekijken.<br>of <b>Rechtermuisknop</b> (Selectie of Kopieerpictogram)"
-    },
-    "license_settings": {
-        "message": "Licentie-instellingen"
-    },
     "lbl_email": {
         "message": "Account Email"
     },
     "lbl_key": {
         "message": "Licentiesleutel"
     },
-    "link_forgot": {
-        "message": "Sleutel vergeten?"
+    "license_button_reset_default": {
+        "message": "⚠️ Actieve Apparaten Resetten"
     },
-    "link_get_license": {
-        "message": "Licentie verkrijgen"
+    "license_button_reset_warning": {
+        "message": "Waarschuwing: Dit zal alle andere apparaten die deze licentie gebruiken ontkoppelen. Doorgaan?"
     },
-    "btn_reset": {
-        "message": "Apparaten Resetten"
-    },
-    "btn_manage": {
-        "message": "Account beheren"
-    },
-    "btn_close": {
-        "message": "Sluiten"
-    },
-    "btn_activate": {
-        "message": "Activeren"
-    },
-    "popup_masked_warn_title": {
-        "message": "Gemaskeerde Inhoud Gedetecteerd"
-    },
-    "popup_masked_warn_msg": {
-        "message": "Om te verzenden, klik op <b>Verzenden</b> en gebruik de <b>Verzend</b> knop van de chat.<br>Wil je verzenden of opnieuw bewerken?"
-    },
-    "btn_edit_prompt": {
-        "message": "Bewerken"
-    },
-    "btn_popup_send_action": {
-        "message": "Verzenden"
-    },
-    "tooltip_premium_reserved": {
-        "message": "Deze inhoud is gereserveerd voor Premium gebruikers. Upgrade om automatisch te maskeren. Je kunt nog steeds handmatig maskeren via rechtsklik of maskericonen."
-    },
-    "tooltip_premium_reserved_safe": {
-        "message": "Deze inhoud is gereserveerd voor Premium gebruikers. (Inloggen vereist). Je kunt nog steeds handmatig maskeren via rechtsklik of maskericonen."
+    "license_button_resetting": {
+        "message": "Resetten..."
     },
     "license_msg_fill_required": {
         "message": "Vul e-mailadres en licentiesleutel in."
-    },
-    "license_msg_verifying": {
-        "message": "Verifiëren met server..."
-    },
-    "license_msg_success": {
-        "message": "Succes! Plan: $PLAN$",
-        "placeholders": {
-            "plan": {
-                "content": "$1"
-            }
-        }
     },
     "license_msg_limit_reached": {
         "message": "⚠️ $MESSAGE$<br><br>Gelieve te <a href='$LINK_UPGRADE$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>upgraden</a> of <a href='$LINK_RESET$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>apparaten te resetten in dashboard</a>.",
@@ -198,16 +115,99 @@
     "license_msg_network_error": {
         "message": "Netwerkverbinding mislukt. Probeer het opnieuw en controleer uw internetverbinding.<br>Als het probleem aanhoudt, neem contact op met support@chatwall.io"
     },
-    "license_button_reset_warning": {
-        "message": "Waarschuwing: Dit zal alle andere apparaten die deze licentie gebruiken ontkoppelen. Doorgaan?"
+    "license_msg_success": {
+        "message": "Succes! Plan: $PLAN$",
+        "placeholders": {
+            "plan": {
+                "content": "$1"
+            }
+        }
     },
-    "license_button_resetting": {
-        "message": "Resetten..."
+    "license_msg_verifying": {
+        "message": "Verifiëren met server..."
     },
-    "license_button_reset_default": {
-        "message": "⚠️ Actieve Apparaten Resetten"
+    "license_settings": {
+        "message": "Licentie-instellingen"
+    },
+    "link_forgot": {
+        "message": "Sleutel vergeten?"
+    },
+    "link_get_license": {
+        "message": "Licentie verkrijgen"
+    },
+    "menu_about": {
+        "message": "Over ChatWall"
+    },
+    "menu_help": {
+        "message": "Hulp"
+    },
+    "menu_legal": {
+        "message": "Licentie"
+    },
+    "menu_manage_sub": {
+        "message": "Account"
+    },
+    "menu_privacy": {
+        "message": "Privacy & Beveiliging"
+    },
+    "menu_settings": {
+        "message": "Instellingen"
+    },
+    "menu_terms": {
+        "message": "Servicevoorwaarden"
+    },
+    "overlay_title": {
+        "message": "ChatWall: AI Firewall"
+    },
+    "panel_anonymized": {
+        "message": "Geanonimiseerd (Wordt verstuurd naar AI)"
+    },
+    "panel_original_preview": {
+        "message": "Originele inhoud (voorbeeld)"
+    },
+    "panel_original_prompt": {
+        "message": "Originele Prompt (Schrijf hier)"
+    },
+    "placeholder_prompt": {
+        "message": "Typ of plak je prompt hier..."
+    },
+    "plan_label": {
+        "message": "Plan:"
+    },
+    "popup_masked_warn_msg": {
+        "message": "Om te verzenden, klik op <b>Verzenden</b> en gebruik de <b>Verzend</b> knop van de chat.<br>Wil je verzenden of opnieuw bewerken?"
+    },
+    "popup_masked_warn_title": {
+        "message": "Gemaskeerde Inhoud Gedetecteerd"
+    },
+    "title_anonymize_mode": {
+        "message": "Chat met AI. Houd gegevens privé."
+    },
+    "title_deanonymize_mode": {
+        "message": "Gedemaskeerde inhoud"
+    },
+    "toast_copied": {
+        "message": "Gekopieerd naar klembord!"
+    },
+    "toast_masked_copied": {
+        "message": "Gemaskeerde inhoud gekopieerd naar klembord!"
     },
     "toast_unmasked_copied": {
         "message": "Gedemaskeerde inhoud gekopieerd naar klembord"
+    },
+    "tooltip_mask_action": {
+        "message": "Klik om uw prompt te beveiligen en te maskeren"
+    },
+    "tooltip_premium_reserved": {
+        "message": "Deze inhoud is gereserveerd voor Premium gebruikers. Upgrade om automatisch te maskeren. Je kunt nog steeds handmatig maskeren via rechtsklik of maskericonen."
+    },
+    "tooltip_premium_reserved_safe": {
+        "message": "Deze inhoud is gereserveerd voor Premium gebruikers. (Inloggen vereist). Je kunt nog steeds handmatig maskeren via rechtsklik of maskericonen."
+    },
+    "tooltip_sensitive_data": {
+        "message": "Gevoelige gegevens gedetecteer!"
+    },
+    "tooltip_use_chatwall": {
+        "message": "Klik om deze gegevens te beveiligen en te maskeren voor verzending."
     }
 }

@@ -353,9 +353,16 @@ chrome.runtime.onInstalled.addListener((details) => {
     });
 
     chrome.contextMenus.create({
-        id: "cw_mask_overlay",
+        id: "cw_use_chatwall",
         parentId: "cw_parent",
-        title: "Mask (Open ChatWall)",
+        title: "Use ChatWall",
+        contexts: ["all"]
+    });
+
+    chrome.contextMenus.create({
+        id: "cw_configure_chatwall",
+        parentId: "cw_parent",
+        title: "Configure ChatWall",
         contexts: ["all"]
     });
 
@@ -369,7 +376,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.contextMenus.create({
         id: "cw_unmask_preview",
         parentId: "cw_parent",
-        title: "Unmask and Preview",
+        title: "Unmask",
         contexts: ["all"]
     });
 
@@ -406,15 +413,17 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         chrome.tabs.sendMessage(tab.id, { action: 'CTX_UNMASK_PREVIEW', selectionText: info.selectionText });
     } else if (info.menuItemId === "cw_unmask_copy") {
         chrome.tabs.sendMessage(tab.id, { action: 'CTX_UNMASK_COPY', selectionText: info.selectionText });
-    } else if (info.menuItemId === "cw_mask_overlay") {
+    } else if (info.menuItemId === "cw_use_chatwall") {
+        chrome.tabs.create({ url: "https://chatwall.io/support.html#docs" });
+    } else if (info.menuItemId === "cw_configure_chatwall") {
         chrome.tabs.sendMessage(tab.id, { action: 'SHOW_OVERLAY' }, (response) => {
-            // If content script isn't loaded (non-AI site), open chatwall.io
             if (chrome.runtime.lastError) {
                 chrome.tabs.create({ url: "https://chatwall.io/support.html#docs" });
             }
         });
     }
 });
+
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'ANALYZE_TEXT') {
@@ -557,7 +566,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         getDeviceId().then(originalId => {
             chrome.storage.local.set({
                 'chatwall_email': request.email,
-                'chatwall_license_key': request.key,
+                'chatwall_license_key': request.licenseKey || request.key,
                 'chatwall_device_id': originalId
             }, () => {
                 validateLicense(originalId).then((result) => {

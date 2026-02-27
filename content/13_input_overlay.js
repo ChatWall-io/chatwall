@@ -535,48 +535,71 @@ function initInputOverlayEvents() {
     }
 
     // ── Favorite button ────────────────────────────────────────────────────
+    // ── Premium favorites popup (shared helper) ───────────────────────────────
+    function showFavPremiumPopup() {
+        let popup = inputOverlayShadowRoot.getElementById('cwio-fav-popup');
+        if (!popup) {
+            popup = document.createElement('div');
+            popup.id = 'cwio-fav-popup';
+            Object.assign(popup.style, {
+                position: 'absolute', inset: '0',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(5,5,18,0.72)', backdropFilter: 'blur(6px)',
+                zIndex: '999', borderRadius: 'inherit',
+            });
+            const card = document.createElement('div');
+            Object.assign(card.style, {
+                background: 'linear-gradient(145deg,#13122a,#1a1838)',
+                border: '1px solid rgba(99,102,241,0.28)',
+                borderRadius: '14px', padding: '22px 24px 18px',
+                maxWidth: '230px', textAlign: 'center',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)',
+                color: '#e2e8f0', fontFamily: 'inherit',
+            });
+            card.innerHTML = `
+                <div style="width:36px;height:36px;margin:0 auto 12px;border-radius:50%;
+                    background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.35);
+                    display:flex;align-items:center;justify-content:center;font-size:16px;">⭐</div>
+                <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:#c7d2fe;letter-spacing:0.02em;">
+                    Favorites — Premium
+                </div>
+                <div style="font-size:11.5px;color:rgba(199,210,254,0.55);line-height:1.6;margin-bottom:18px;">
+                    Auto-mask your favourite words every time they appear in your prompts.
+                </div>
+                <a id="cwio-fav-upgrade" href="https://chatwall.io/#pricing" target="_blank"
+                    style="display:block;background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                    color:#fff;font-weight:600;font-size:12px;padding:8px 0;border-radius:8px;
+                    text-decoration:none;margin-bottom:10px;letter-spacing:0.03em;
+                    box-shadow:0 2px 12px rgba(99,102,241,0.35);transition:opacity .15s;">
+                    Upgrade to unlock ↗
+                </a>
+                <button id="cwio-fav-dismiss"
+                    style="background:none;border:none;color:rgba(199,210,254,0.35);
+                    font-size:11px;cursor:pointer;padding:2px 6px;font-family:inherit;
+                    transition:color .15s;">
+                    Not now
+                </button>`;
+            popup.appendChild(card);
+            inputOverlayShadowRoot.getElementById('cwio-shell').appendChild(popup);
+            popup.addEventListener('click', ev => { if (ev.target === popup) popup.style.display = 'none'; });
+            popup.querySelector('#cwio-fav-dismiss').addEventListener('click', () => { popup.style.display = 'none'; });
+            popup.querySelector('#cwio-fav-upgrade').addEventListener('click', () => { popup.style.display = 'none'; });
+            // Hover effects
+            const upgradeBtn = popup.querySelector('#cwio-fav-upgrade');
+            upgradeBtn.addEventListener('mouseenter', () => upgradeBtn.style.opacity = '0.88');
+            upgradeBtn.addEventListener('mouseleave', () => upgradeBtn.style.opacity = '');
+            const dismissBtn = popup.querySelector('#cwio-fav-dismiss');
+            dismissBtn.addEventListener('mouseenter', () => dismissBtn.style.color = 'rgba(199,210,254,0.65)');
+            dismissBtn.addEventListener('mouseleave', () => dismissBtn.style.color = '');
+        }
+        popup.style.display = 'flex';
+    }
+
     if (btnFav) {
         btnFav.addEventListener('mousedown', e => e.preventDefault());
         btnFav.addEventListener('click', () => {
             if (!isPremium()) {
-                let popup = inputOverlayShadowRoot.getElementById('cwio-fav-popup');
-                if (!popup) {
-                    popup = document.createElement('div');
-                    popup.id = 'cwio-fav-popup';
-                    Object.assign(popup.style, {
-                        position: 'absolute', inset: '0',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: 'rgba(10,10,20,0.6)', backdropFilter: 'blur(4px)',
-                        zIndex: '999', borderRadius: 'inherit',
-                    });
-                    const card = document.createElement('div');
-                    Object.assign(card.style, {
-                        background: '#18172a',
-                        border: '1px solid rgba(255,255,255,0.09)',
-                        borderRadius: '12px', padding: '20px 22px 16px',
-                        maxWidth: '224px', textAlign: 'center',
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.45)',
-                        color: '#e2e8f0', fontFamily: 'inherit',
-                    });
-                    card.innerHTML = `
-                        <div style="font-size:18px;margin-bottom:10px;opacity:0.85;">⭐</div>
-                        <div style="font-weight:600;font-size:13px;margin-bottom:5px;color:#cbd5e1;letter-spacing:0.01em;">Favorites is a Premium feature</div>
-                        <div style="font-size:11.5px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:16px;">
-                            Auto-mask your favourite words every time they appear.
-                        </div>
-                        <a id="cwio-fav-upgrade" href="https://chatwall.io/#pricing" target="_blank"
-                            style="display:block;background:#f59e0b;color:#0d0900;font-weight:700;font-size:12px;padding:7px 0;border-radius:7px;text-decoration:none;margin-bottom:9px;letter-spacing:0.02em;">
-                            Upgrade to Premium ↗
-                        </a>
-                        <button id="cwio-fav-dismiss" style="background:none;border:none;color:rgba(255,255,255,0.28);font-size:11px;cursor:pointer;padding:2px 6px;font-family:inherit;">Not now</button>
-                    `;
-                    popup.appendChild(card);
-                    inputOverlayShadowRoot.getElementById('cwio-shell').appendChild(popup);
-                    popup.addEventListener('click', ev => { if (ev.target === popup) popup.style.display = 'none'; });
-                    popup.querySelector('#cwio-fav-dismiss').addEventListener('click', () => { popup.style.display = 'none'; });
-                    popup.querySelector('#cwio-fav-upgrade').addEventListener('click', () => { popup.style.display = 'none'; });
-                }
-                popup.style.display = 'flex';
+                showFavPremiumPopup();
                 return;
             }
             const sel = getInputSelection(ta);
@@ -799,7 +822,7 @@ function initInputOverlayEvents() {
         // ── 2. UNMASK / REMOVE FAVORITE ───────────────────────────────────────
         if (isFavorite) {
             ctxMenu.appendChild(mkItem(SVG_REM, 'Remove from favorites', () => {
-                if (!isPremium()) return;
+                if (!isPremium()) { showFavPremiumPopup(); hideCtxMenu(); return; }
                 if (typeof favoritesList !== 'undefined') {
                     favoritesList.delete(targetText);
                     inputCustomWords.delete(targetText);
@@ -828,7 +851,7 @@ function initInputOverlayEvents() {
         if (!isFavorite && targetText) {
             const favLabel = hasSelection ? 'Add selection to favorites' : `Add "${targetText}" to favorites`;
             ctxMenu.appendChild(mkItem(SVG_FAV, favLabel, () => {
-                if (!isPremium()) return;
+                if (!isPremium()) { showFavPremiumPopup(); hideCtxMenu(); return; }
                 const word = selText || (wordAt ? wordAt.text : '') || (tokenAtCursor ? tokenAtCursor.text : '');
                 if (word && typeof favoritesList !== 'undefined') {
                     favoritesList.add(word);

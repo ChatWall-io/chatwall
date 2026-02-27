@@ -23,8 +23,7 @@
         "clipboardWrite",
         "activeTab",
         "storage",
-        "alarms",
-        "notifications"
+        "alarms"
     ],
     "host_permissions": [
         "http://localhost:3000/api/verify-license"

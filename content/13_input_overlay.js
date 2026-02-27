@@ -481,8 +481,9 @@ function initInputOverlayEvents() {
             handleOptimisticInput(ta);
             hl.scrollTop = ta.scrollTop;
             autoResize(ta, hl);
-            processText(true);  // force full scan on paste
-            requestAnimationFrame(updateWarnBar);
+            // processText is async — await it so updateWarnBar fires AFTER
+            // currentMatches is populated with the scan result (locked tokens).
+            processText(true).then(() => requestAnimationFrame(updateWarnBar));
         }, 30);
     });
 

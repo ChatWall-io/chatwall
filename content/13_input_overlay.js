@@ -679,37 +679,52 @@ function initInputOverlayEvents() {
         if (typeof window.cwOpenModeMenu === 'function') window.cwOpenModeMenu();
     });
 
-    // ── Premium warning-icon tooltip ───────────────────────────────────────
-    // Uses position:fixed to escape #cwio-hl overflow:hidden.
-    // Delegation works because .warning-icon has pointer-events:auto.
+    // ── Premium locked-token tooltip ──────────────────────────────────────────
+    // ta sits ON TOP of hl in z-order, so .token-locked spans never receive
+    // pointer events directly. Instead, listen on ta and do a bounding-rect
+    // hit-test against all .token-locked spans in hl on every mousemove.
     {
         let _cwTip = null;
-        inputOverlayShadowRoot.addEventListener('mouseover', (evT) => {
-            if (!evT.target.classList.contains('warning-icon')) return;
+        ta.addEventListener('mousemove', (evT) => {
+            const lockedSpans = hl.querySelectorAll('.token-locked');
+            let found = null;
+            for (const span of lockedSpans) {
+                const r = span.getBoundingClientRect();
+                if (evT.clientX >= r.left && evT.clientX <= r.right &&
+                    evT.clientY >= r.top && evT.clientY <= r.bottom) {
+                    found = span;
+                    break;
+                }
+            }
+            if (!found) {
+                if (_cwTip) _cwTip.style.opacity = '0';
+                return;
+            }
             if (!_cwTip) {
                 _cwTip = document.createElement('div');
                 Object.assign(_cwTip.style, {
                     position: 'fixed',
-                    background: '#18172a',
-                    border: '1px solid rgba(245,158,11,0.3)',
-                    color: '#e2e8f0', fontSize: '10.5px', fontWeight: '500',
-                    padding: '5px 10px', borderRadius: '6px',
-                    boxShadow: '0 3px 12px rgba(0,0,0,0.5)',
-                    pointerEvents: 'none', whiteSpace: 'nowrap',
+                    background: 'linear-gradient(135deg,#13122a,#1a1838)',
+                    border: '1px solid rgba(99,102,241,0.28)',
+                    color: '#c7d2fe', fontSize: '10.5px', fontWeight: '500',
+                    padding: '6px 10px', borderRadius: '7px', lineHeight: '1.5',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.55)',
+                    pointerEvents: 'none', whiteSpace: 'normal', maxWidth: '220px',
                     opacity: '0', transition: 'opacity 0.12s',
                     zIndex: '2147483647', fontFamily: 'inherit',
                 });
-                _cwTip.textContent = '\u2b50 Upgrade to Premium to auto-mask favourites';
                 const shell = inputOverlayShadowRoot.getElementById('cwio-shell');
                 if (shell) shell.appendChild(_cwTip);
             }
-            const r = evT.target.getBoundingClientRect();
-            _cwTip.style.left = Math.max(4, r.right - 4) + 'px';
-            _cwTip.style.top = (r.top - 32) + 'px';
+            const tooltipText = found.getAttribute('data-tooltip-text')
+                || '⭐ Upgrade to Premium to auto-mask this';
+            _cwTip.textContent = tooltipText;
+            _cwTip.style.left = (evT.clientX + 12) + 'px';
+            _cwTip.style.top = (evT.clientY - 34) + 'px';
             _cwTip.style.opacity = '1';
         });
-        inputOverlayShadowRoot.addEventListener('mouseout', (evT) => {
-            if (_cwTip && evT.target.classList.contains('warning-icon')) _cwTip.style.opacity = '0';
+        ta.addEventListener('mouseleave', () => {
+            if (_cwTip) _cwTip.style.opacity = '0';
         });
     }
 
@@ -1174,6 +1189,32 @@ function hideReopenBadge() {
 
 function positionReopenBadge() {
     if (!reopenBadge || !reopenBadgeNative) return;
+
+    // Self-heal: if the SPA replaced the textarea after submit (React, Vue, etc.)
+    // the old reference is detached — find the live input and re-bind.
+    if (!document.body.contains(reopenBadgeNative)) {
+        const fresh = (typeof findMainInput === 'function') ? findMainInput() : null;
+        if (!fresh) return;
+        reopenBadgeNative = fresh;
+        // Rewire ResizeObserver to the new element so future resizes reposition badge
+        if (reopenBadgeResizeObs) {
+            reopenBadgeResizeObs.disconnect();
+            reopenBadgeResizeObs.observe(fresh);
+            if (fresh.parentElement) reopenBadgeResizeObs.observe(fresh.parentElement);
+        }
+        // Rewire MutationObserver to track the new element's content & parent
+        if (reopenBadgeMutObs) {
+            reopenBadgeMutObs.disconnect();
+            reopenBadgeMutObs.observe(fresh, {
+                characterData: true, childList: true, subtree: true,
+                attributes: true, attributeFilter: ['style', 'class'],
+            });
+            if (fresh.parentElement) {
+                reopenBadgeMutObs.observe(fresh.parentElement, { childList: true });
+            }
+        }
+    }
+
     const r = reopenBadgeNative.getBoundingClientRect();
     if (r.width === 0) return;
     // Place badge just ABOVE the input's top-right corner so it never overlaps text

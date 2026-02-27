@@ -401,11 +401,15 @@
     position: relative;
     /* anchor for the absolutely-positioned warning icon */
     display: inline;
+    background: transparent;
+    /* override .token base background */
     outline: 1px dashed #f97316;
     outline-offset: -1px;
     border-radius: 3px;
     color: inherit;
     cursor: help;
+    pointer-events: auto;
+    /* children can override parent pointer-events:none */
 }
 
 /* Warning icon: position:absolute takes it OUT of text flow → zero layout impact,

@@ -945,7 +945,6 @@
     border: none !important;
     outline: 1px dashed #ef4444;
     outline-offset: -1px;
-    background-color: rgba(254, 242, 242, 0.6);
     color: inherit;
     border-radius: 4px;
     pointer-events: auto !important;

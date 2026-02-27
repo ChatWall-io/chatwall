@@ -2,80 +2,74 @@
     "appName": {
         "message": "ChatWall: AI Firewall"
     },
-    "overlay_title": {
-        "message": "ChatWall: AI Firewall"
-    },
-    "btn_upgrade": {
-        "message": "Upgrade to Premium"
-    },
-    "menu_license": {
-        "message": "License Management"
-    },
-    "menu_help": {
-        "message": "Help"
-    },
-    "menu_privacy": {
-        "message": "Privacy & Security"
-    },
-    "menu_legal": {
-        "message": "License"
-    },
-    "menu_terms": {
-        "message": "Terms of Service"
-    },
-    "menu_manage_sub": {
-        "message": "Account"
-    },
-    "menu_about": {
-        "message": "About ChatWall"
-    },
-    "panel_original_prompt": {
-        "message": "Original Prompt (Write here)"
-    },
-    "placeholder_prompt": {
-        "message": "Type or paste prompt here..."
-    },
-    "panel_anonymized": {
-        "message": "Anonymized (Will be sent to AI)"
-    },
-    "title_anonymize_mode": {
-        "message": "Chat with AI. Keep data private."
-    },
-    "title_deanonymize_mode": {
-        "message": "De-anonymized Content"
-    },
-    "panel_original_preview": {
-        "message": "Original Content (Preview)"
-    },
-    "btn_send": {
-        "message": "Send to AI prompt"
+    "btn_activate": {
+        "message": "Activate"
     },
     "btn_cancel": {
         "message": "Cancel"
     },
+    "btn_close": {
+        "message": "Close"
+    },
     "btn_copy": {
         "message": "Copy Content"
     },
-    "plan_label": {
-        "message": "Plan:"
+    "btn_edit_prompt": {
+        "message": "Re-edit"
+    },
+    "btn_expand_overlay": {
+        "message": "Expand overlay"
+    },
+    "btn_manage": {
+        "message": "Manage Account"
+    },
+    "btn_mask": {
+        "message": "Mask"
+    },
+    "btn_popup_send_action": {
+        "message": "Send"
+    },
+    "btn_reset": {
+        "message": "Reset Active Devices"
+    },
+    "btn_send": {
+        "message": "Send to AI prompt"
+    },
+    "btn_send_masked": {
+        "message": "Submit masked"
+    },
+    "btn_unmask": {
+        "message": "Unmask"
+    },
+    "btn_upgrade": {
+        "message": "Upgrade to Premium"
+    },
+    "ctx_add_fav": {
+        "message": "Add to Favorites"
     },
     "ctx_copy": {
         "message": "Copy"
     },
-    "ctx_read_docs": {
-        "message": "Read Documentation"
+    "ctx_cut": {
+        "message": "Cut"
+    },
+    "ctx_mask": {
+        "message": "Mask Selection"
     },
     "ctx_paste": {
         "message": "Paste"
     },
-    "ctx_cut": {
-        "message": "Cut"
+    "ctx_premium_tag": {
+        "message": "(Premium)"
+    },
+    "ctx_read_docs": {
+        "message": "Read Documentation"
+    },
+    "ctx_rem_fav": {
+        "message": "Remove Favorite"
     },
     "ctx_select_all": {
         "message": "Select All"
-    },
-    "ctx_mask": {
-        "message": "Mask Selection"
     },
     "ctx_unmask": {
         "message": "Unmask Selection"
@@ -86,100 +80,23 @@
     "help_custom_tool_unmask": {
         "message": "Unmask Selection"
     },
-    "ctx_add_fav": {
-        "message": "Add to Favorites"
-    },
-    "ctx_rem_fav": {
-        "message": "Remove Favorite"
-    },
-    "ctx_premium_tag": {
-        "message": "(Premium)"
-    },
-    "rc_unmask_preview": {
-        "message": "UnMask (Preview)"
-    },
-    "rc_unmask_copy": {
-        "message": "UnMask & Copy"
-    },
-    "toast_copied": {
-        "message": "Copied to clipboard!"
-    },
-    "toast_masked_copied": {
-        "message": "Masked content copied to clipboard!"
-    },
-    "tooltip_sensitive_data": {
-        "message": "Sensitive Data Detected!"
-    },
-    "tooltip_mask_action": {
-        "message": "Click to secure and mask your prompt"
-    },
-    "tooltip_use_chatwall": {
-        "message": "Click to secure and mask this data before sending."
-    },
-    "tooltip_response_done": {
-        "message": "Response Completed"
-    },
-    "tooltip_click_unmask": {
-        "message": "Click to Unmask and View content.<br>Or <b>Right Click</b> (Selection or Copy Icon)"
-    },
-    "license_settings": {
-        "message": "License Settings"
-    },
     "lbl_email": {
         "message": "Account Email"
     },
     "lbl_key": {
         "message": "License Key"
     },
-    "link_forgot": {
-        "message": "Forgot Key?"
+    "license_button_reset_default": {
+        "message": "⚠️ Reset Active Devices"
     },
-    "link_get_license": {
-        "message": "Get a license"
+    "license_button_reset_warning": {
+        "message": "Warning: This will disconnect all other devices using this license. Continue?"
     },
-    "btn_reset": {
-        "message": "Reset Active Devices"
-    },
-    "btn_manage": {
-        "message": "Manage Account"
-    },
-    "btn_close": {
-        "message": "Close"
-    },
-    "btn_activate": {
-        "message": "Activate"
-    },
-    "popup_masked_warn_title": {
-        "message": "Masked Content Detected"
-    },
-    "popup_masked_warn_msg": {
-        "message": "To send, click <b>Cancel</b> and use the chat's <b>Send</b> button.<br>Do you want to send to chat or re-edit the prompt?"
-    },
-    "btn_edit_prompt": {
-        "message": "Re-edit"
-    },
-    "btn_popup_send_action": {
-        "message": "Send"
-    },
-    "tooltip_premium_reserved": {
-        "message": "This content is reserved for Premium users. Upgrade to mask automatically. You can still mask it manually using right click or mask icons."
-    },
-    "tooltip_premium_reserved_safe": {
-        "message": "This content is reserved for Premium users. (Login required). You can still mask it manually using right click or mask icons."
+    "license_button_resetting": {
+        "message": "Resetting..."
     },
     "license_msg_fill_required": {
         "message": "Please fill in Email and License Key."
-    },
-    "license_msg_verifying": {
-        "message": "Verifying with server..."
-    },
-    "license_msg_success": {
-        "message": "Success! Plan: $PLAN$",
-        "placeholders": {
-            "plan": {
-                "content": "$1"
-            }
-        }
     },
     "license_msg_limit_reached": {
         "message": "⚠️ $MESSAGE$<br><br>Please <a href='$LINK_UPGRADE$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>upgrade plan</a> or <a href='$LINK_RESET$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>reset devices in dashboard</a>.",
@@ -198,16 +115,99 @@
     "license_msg_network_error": {
         "message": "Network connection failed. Please retry and check your internet connection.<br>If the issue persists, contact support@chatwall.io"
     },
-    "license_button_reset_warning": {
-        "message": "Warning: This will disconnect all other devices using this license. Continue?"
+    "license_msg_success": {
+        "message": "Success! Plan: $PLAN$",
+        "placeholders": {
+            "plan": {
+                "content": "$1"
+            }
+        }
     },
-    "license_button_resetting": {
-        "message": "Resetting..."
+    "license_msg_verifying": {
+        "message": "Verifying with server..."
     },
-    "license_button_reset_default": {
-        "message": "⚠️ Reset Active Devices"
+    "license_settings": {
+        "message": "License Settings"
+    },
+    "link_forgot": {
+        "message": "Forgot Key?"
+    },
+    "link_get_license": {
+        "message": "Get a license"
+    },
+    "menu_about": {
+        "message": "About ChatWall"
+    },
+    "menu_help": {
+        "message": "Help"
+    },
+    "menu_legal": {
+        "message": "License"
+    },
+    "menu_manage_sub": {
+        "message": "Account"
+    },
+    "menu_privacy": {
+        "message": "Privacy & Security"
+    },
+    "menu_settings": {
+        "message": "Settings"
+    },
+    "menu_terms": {
+        "message": "Terms of Service"
+    },
+    "overlay_title": {
+        "message": "ChatWall: AI Firewall"
+    },
+    "panel_anonymized": {
+        "message": "Anonymized (Will be sent to AI)"
+    },
+    "panel_original_preview": {
+        "message": "Original Content (Preview)"
+    },
+    "panel_original_prompt": {
+        "message": "Original Prompt (Write here)"
+    },
+    "placeholder_prompt": {
+        "message": "Type or paste prompt here..."
+    },
+    "plan_label": {
+        "message": "Plan:"
+    },
+    "popup_masked_warn_msg": {
+        "message": "To send, click <b>Cancel</b> and use the chat's <b>Send</b> button.<br>Do you want to send to chat or re-edit the prompt?"
+    },
+    "popup_masked_warn_title": {
+        "message": "Masked Content Detected"
+    },
+    "title_anonymize_mode": {
+        "message": "Chat with AI. Keep data private."
+    },
+    "title_deanonymize_mode": {
+        "message": "De-anonymized Content"
+    },
+    "toast_copied": {
+        "message": "Copied to clipboard!"
+    },
+    "toast_masked_copied": {
+        "message": "Masked content copied to clipboard!"
     },
     "toast_unmasked_copied": {
         "message": "Unmasked content copied to clipboard"
+    },
+    "tooltip_mask_action": {
+        "message": "Click to secure and mask your prompt"
+    },
+    "tooltip_premium_reserved": {
+        "message": "This content is reserved for Premium users. Upgrade to mask automatically. You can still mask it manually using right click or mask icons."
+    },
+    "tooltip_premium_reserved_safe": {
+        "message": "This content is reserved for Premium users. (Login required). You can still mask it manually using right click or mask icons."
+    },
+    "tooltip_sensitive_data": {
+        "message": "Sensitive Data Detected!"
+    },
+    "tooltip_use_chatwall": {
+        "message": "Click to secure and mask this data before sending."
     }
 }

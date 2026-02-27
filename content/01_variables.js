@@ -90,6 +90,17 @@ let unmaskBadge = null;
 let lastRiskAnalysis = false;
 let decisionPopup = null;
 
+// --- INPUT MODE & MINI-OVERLAY STATE ---
+let cwInputMode = 'float';           // 'float' | 'integrated'  (loaded from storage)
+let cwModeMenuEl = null;             // The top-right mode-switcher widget element
+let inputOverlayContainer = null;    // The absolute host div placed over the native input
+let inputOverlayShadowRoot = null;   // Its closed shadow root
+let inputOverlayNativeEl = null;     // The original native input element being covered
+let inputOverlayInputText = null;    // Cached #cwio-textarea ref
+let inputOverlayHighlights = null;   // Cached #cwio-highlights ref
+let inputOverlayMatches = [];        // Active matches for the mini-overlay session
+let inputOverlayActiveTool = null;   // 'mask' | 'unmask' | null
+
 // Constants / Assets
 const RED_SHIELD_SVG = `
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

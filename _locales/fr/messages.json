@@ -2,80 +2,74 @@
     "appName": {
         "message": "ChatWall: Pare-feu IA"
     },
-    "overlay_title": {
-        "message": "ChatWall: Pare-feu IA"
-    },
-    "btn_upgrade": {
-        "message": "Passer à Premium"
-    },
-    "menu_license": {
-        "message": "Gestion de Licence"
-    },
-    "menu_help": {
-        "message": "Aide"
-    },
-    "menu_privacy": {
-        "message": "Confidentialité & Sécurité"
-    },
-    "menu_legal": {
-        "message": "Licence"
-    },
-    "menu_terms": {
-        "message": "Conditions d'utilisation"
-    },
-    "menu_manage_sub": {
-        "message": "Compte"
-    },
-    "menu_about": {
-        "message": "À propos de ChatWall"
-    },
-    "panel_original_prompt": {
-        "message": "Prompt Original (Écrire ici)"
-    },
-    "placeholder_prompt": {
-        "message": "Tapez ou collez votre prompt ici..."
-    },
-    "panel_anonymized": {
-        "message": "Anonymisé (Sera envoyé à l'IA)"
-    },
-    "title_anonymize_mode": {
-        "message": "Discutez avec l'IA. Gardez vos données privées."
-    },
-    "title_deanonymize_mode": {
-        "message": "Contenu Démasqué"
-    },
-    "panel_original_preview": {
-        "message": "Contenu Original (Aperçu)"
-    },
-    "btn_send": {
-        "message": "Envoyer au prompt IA"
+    "btn_activate": {
+        "message": "Activer"
     },
     "btn_cancel": {
         "message": "Annuler"
     },
+    "btn_close": {
+        "message": "Fermer"
+    },
     "btn_copy": {
         "message": "Copier le contenu"
     },
-    "plan_label": {
-        "message": "Plan :"
+    "btn_edit_prompt": {
+        "message": "Ré-éditer"
+    },
+    "btn_expand_overlay": {
+        "message": "Agrandir le panneau"
+    },
+    "btn_manage": {
+        "message": "Gérer le compte"
+    },
+    "btn_mask": {
+        "message": "Masquer"
+    },
+    "btn_popup_send_action": {
+        "message": "Envoyer"
+    },
+    "btn_reset": {
+        "message": "Réinitialiser les Appareils"
+    },
+    "btn_send": {
+        "message": "Envoyer au prompt IA"
+    },
+    "btn_send_masked": {
+        "message": "Envoyer masqué"
+    },
+    "btn_unmask": {
+        "message": "Démasquer"
+    },
+    "btn_upgrade": {
+        "message": "Passer à Premium"
+    },
+    "ctx_add_fav": {
+        "message": "Ajouter aux Favoris"
     },
     "ctx_copy": {
         "message": "Copier"
     },
-    "ctx_read_docs": {
-        "message": "Lire la documentation"
+    "ctx_cut": {
+        "message": "Couper"
+    },
+    "ctx_mask": {
+        "message": "Masquer la sélection"
     },
     "ctx_paste": {
         "message": "Coller"
     },
-    "ctx_cut": {
-        "message": "Couper"
+    "ctx_premium_tag": {
+        "message": "(Premium)"
+    },
+    "ctx_read_docs": {
+        "message": "Lire la documentation"
+    },
+    "ctx_rem_fav": {
+        "message": "Retirer Favori"
     },
     "ctx_select_all": {
         "message": "Tout sélectionner"
-    },
-    "ctx_mask": {
-        "message": "Masquer la sélection"
     },
     "ctx_unmask": {
         "message": "Démasquer la sélection"
@@ -86,100 +80,23 @@
     "help_custom_tool_unmask": {
         "message": "Démasquer"
     },
-    "ctx_add_fav": {
-        "message": "Ajouter aux Favoris"
-    },
-    "ctx_rem_fav": {
-        "message": "Retirer Favori"
-    },
-    "ctx_premium_tag": {
-        "message": "(Premium)"
-    },
-    "rc_unmask_preview": {
-        "message": "Démasquer (Aperçu)"
-    },
-    "rc_unmask_copy": {
-        "message": "Démasquer & Copier"
-    },
-    "toast_copied": {
-        "message": "Copié dans le presse-papiers !"
-    },
-    "toast_masked_copied": {
-        "message": "Contenu masqué copié dans le presse-papiers !"
-    },
-    "tooltip_sensitive_data": {
-        "message": "Données Sensibles Détectées !"
-    },
-    "tooltip_mask_action": {
-        "message": "Cliquez pour sécuriser et masquer votre prompt"
-    },
-    "tooltip_use_chatwall": {
-        "message": "Cliquez pour sécuriser et masquer ces données avant l'envoi."
-    },
-    "tooltip_response_done": {
-        "message": "Réponse terminée"
-    },
-    "tooltip_click_unmask": {
-        "message": "Cliquer pour démasquer et voir le contenu.<br>Ou <b>Clic Droit</b> (Sélection ou Icône Copier)"
-    },
-    "license_settings": {
-        "message": "Paramètres de Licence"
-    },
     "lbl_email": {
         "message": "Email du Compte"
     },
     "lbl_key": {
         "message": "Clé de Licence"
     },
-    "link_forgot": {
-        "message": "Clé oubliée ?"
+    "license_button_reset_default": {
+        "message": "⚠️ Réinitialiser Appareils Actifs"
     },
-    "link_get_license": {
-        "message": "Obtenir une licence"
+    "license_button_reset_warning": {
+        "message": "Attention : Ceci déconnectera tous les autres appareils utilisant cette licence. Continuer ?"
     },
-    "btn_reset": {
-        "message": "Réinitialiser les Appareils"
-    },
-    "btn_manage": {
-        "message": "Gérer le compte"
-    },
-    "btn_close": {
-        "message": "Fermer"
-    },
-    "btn_activate": {
-        "message": "Activer"
-    },
-    "popup_masked_warn_title": {
-        "message": "Contenu Masqué Détecté"
-    },
-    "popup_masked_warn_msg": {
-        "message": "Pour envoyer, cliquez sur <b>Annuler</b> et utilisez le bouton <b>Envoyer</b> du chat.<br>Voulez-vous envoyer au chat ou rééditer le prompt ?"
-    },
-    "btn_edit_prompt": {
-        "message": "Ré-éditer"
-    },
-    "btn_popup_send_action": {
-        "message": "Envoyer"
-    },
-    "tooltip_premium_reserved": {
-        "message": "Ce contenu est réservé aux utilisateurs Premium. Mettez à niveau pour masquer automatiquement. Vous pouvez toujours masquer manuellement via clic droit ou icônes de masque."
-    },
-    "tooltip_premium_reserved_safe": {
-        "message": "Ce contenu est réservé aux utilisateurs Premium. (Connexion requise). Vous pouvez toujours masquer manuellement via clic droit ou icônes de masque."
+    "license_button_resetting": {
+        "message": "Réinitialisation..."
     },
     "license_msg_fill_required": {
         "message": "Veuillez remplir l'Email et la Clé de Licence."
-    },
-    "license_msg_verifying": {
-        "message": "Vérification avec le serveur..."
-    },
-    "license_msg_success": {
-        "message": "Succès ! Plan : $PLAN$",
-        "placeholders": {
-            "plan": {
-                "content": "$1"
-            }
-        }
     },
     "license_msg_limit_reached": {
         "message": "⚠️ $MESSAGE$<br><br>Veuillez <a href='$LINK_UPGRADE$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>mettre à niveau</a> ou <a href='$LINK_RESET$' target='_blank' style='color:#b91c1c;text-decoration:underline;'>réinitialiser les appareils dans le tableau de bord</a>.",
@@ -198,16 +115,99 @@
     "license_msg_network_error": {
         "message": "Échec de la connexion réseau. Veuillez réessayer et vérifier votre connexion internet.<br>Si le problème persiste, contactez support@chatwall.io"
     },
-    "license_button_reset_warning": {
-        "message": "Attention : Ceci déconnectera tous les autres appareils utilisant cette licence. Continuer ?"
+    "license_msg_success": {
+        "message": "Succès ! Plan : $PLAN$",
+        "placeholders": {
+            "plan": {
+                "content": "$1"
+            }
+        }
     },
-    "license_button_resetting": {
-        "message": "Réinitialisation..."
+    "license_msg_verifying": {
+        "message": "Vérification avec le serveur..."
     },
-    "license_button_reset_default": {
-        "message": "⚠️ Réinitialiser Appareils Actifs"
+    "license_settings": {
+        "message": "Paramètres de Licence"
+    },
+    "link_forgot": {
+        "message": "Clé oubliée ?"
+    },
+    "link_get_license": {
+        "message": "Obtenir une licence"
+    },
+    "menu_about": {
+        "message": "À propos de ChatWall"
+    },
+    "menu_help": {
+        "message": "Aide"
+    },
+    "menu_legal": {
+        "message": "Licence"
+    },
+    "menu_manage_sub": {
+        "message": "Compte"
+    },
+    "menu_privacy": {
+        "message": "Confidentialité & Sécurité"
+    },
+    "menu_settings": {
+        "message": "Paramètres"
+    },
+    "menu_terms": {
+        "message": "Conditions d'utilisation"
+    },
+    "overlay_title": {
+        "message": "ChatWall: Pare-feu IA"
+    },
+    "panel_anonymized": {
+        "message": "Anonymisé (Sera envoyé à l'IA)"
+    },
+    "panel_original_preview": {
+        "message": "Contenu Original (Aperçu)"
+    },
+    "panel_original_prompt": {
+        "message": "Prompt Original (Écrire ici)"
+    },
+    "placeholder_prompt": {
+        "message": "Tapez ou collez votre prompt ici..."
+    },
+    "plan_label": {
+        "message": "Plan :"
+    },
+    "popup_masked_warn_msg": {
+        "message": "Pour envoyer, cliquez sur <b>Annuler</b> et utilisez le bouton <b>Envoyer</b> du chat.<br>Voulez-vous envoyer au chat ou rééditer le prompt ?"
+    },
+    "popup_masked_warn_title": {
+        "message": "Contenu Masqué Détecté"
+    },
+    "title_anonymize_mode": {
+        "message": "Discutez avec l'IA. Gardez vos données privées."
+    },
+    "title_deanonymize_mode": {
+        "message": "Contenu Démasqué"
+    },
+    "toast_copied": {
+        "message": "Copié dans le presse-papiers !"
+    },
+    "toast_masked_copied": {
+        "message": "Contenu masqué copié dans le presse-papiers !"
     },
     "toast_unmasked_copied": {
         "message": "Contenu démasqué copié dans le presse-papier"
+    },
+    "tooltip_mask_action": {
+        "message": "Cliquez pour sécuriser et masquer votre prompt"
+    },
+    "tooltip_premium_reserved": {
+        "message": "Ce contenu est réservé aux utilisateurs Premium. Mettez à niveau pour masquer automatiquement. Vous pouvez toujours masquer manuellement via clic droit ou icônes de masque."
+    },
+    "tooltip_premium_reserved_safe": {
+        "message": "Ce contenu est réservé aux utilisateurs Premium. (Connexion requise). Vous pouvez toujours masquer manuellement via clic droit ou icônes de masque."
+    },
+    "tooltip_sensitive_data": {
+        "message": "Données Sensibles Détectées !"
+    },
+    "tooltip_use_chatwall": {
+        "message": "Cliquez pour sécuriser et masquer ces données avant l'envoi."
     }
 }

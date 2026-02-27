@@ -18,6 +18,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             updatePlanUI();
             processText(true);
         }
+        // Also refresh integrated overlay if it's open
+        if (typeof inputOverlayIsOpen !== 'undefined' && inputOverlayIsOpen &&
+            typeof processText === 'function') {
+            processText(true);
+        }
     }
 
     if (msg.action === "SHOW_OVERLAY") {
@@ -38,63 +43,133 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     } else if (msg.action === "DEANONYMIZE_AND_COPY") {
         handleDeanonymizeAndCopy();
     } else if (msg.action === "CTX_UNMASK_PREVIEW") {
-        const selectedHtml = getSelectionHtml();
-        if (selectedHtml && selectedHtml.trim().length > 0) {
-            handleDeanonymize(selectedHtml, true);
-        } else {
-            const btn = findCopyButtonRelative(lastRightClickedElement);
-            handleDeanonymizeElement(btn, lastRightClickedElement);
-        }
-    } else if (msg.action === "CTX_UNMASK_COPY") {
-        const selectedHtml = getSelectionHtml();
-        const selectedContent = (selectedHtml && selectedHtml.trim().length > 0) ? selectedHtml : msg.selectionText;
-        if (selectedContent && selectedContent.trim().length > 0) {
-            (async () => {
-                try {
-                    const tokenMap = await getTokenMap();
-                    const regex = /\[[A-Z]+_[A-Z0-9]+\]/g;
-                    const unmaskedHtml = selectedContent.replace(regex, (match) => tokenMap[match] || match);
-                    const tmp = document.createElement('div');
-                    tmp.innerHTML = unmaskedHtml;
-                    const unmaskedText = tmp.innerText || tmp.textContent;
+        (async () => {
+            // ── Selection-scoped path ────────────────────────────────────────
+            const sel = window.getSelection();
+            const hasSelection = sel && sel.rangeCount > 0 && sel.toString().trim().length > 0;
 
-                    const blobHtml = new Blob([unmaskedHtml], { type: 'text/html' });
-                    const blobText = new Blob([unmaskedText], { type: 'text/plain' });
-                    const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
+            if (hasSelection) {
+                const range = sel.getRangeAt(0);
+                let container = range.commonAncestorContainer;
+                if (container.nodeType === Node.TEXT_NODE) container = container.parentElement;
+                // Convert raw tokens to pills, then reveal ONLY pills in the selection range
+                if (typeof forceRedactContainer === 'function') await forceRedactContainer(container);
+                if (typeof unmaskPillsInRange === 'function') unmaskPillsInRange(range, container);
+                else await unmaskInResponseDOM(container, true);
+                return; // no toast for unmask-only
+            }
 
-                    navigator.clipboard.write(data).then(() => {
-                        showToast("✅ Copied Selection (Unmasked)", "success");
-                    });
-                } catch (e) {
-                    console.error("Selection Copy Failed", e);
-                    showToast("❌ Copy Failed", "error");
-                }
-            })();
-        } else {
-            const btn = findCopyButtonRelative(lastRightClickedElement);
-            if (btn) {
-                handleUnmaskAndCopy(btn, 0, 0, lastRightClickedElement);
-            } else {
-                const element = lastRightClickedElement;
-                if (element) {
-                    let target = element.closest('div, article, p') || element;
-                    let content = target.innerText || target.textContent || "";
-                    (async () => {
-                        const tokenMap = await getTokenMap();
-                        content = content.replace(/\[[A-Z]+_[A-Z0-9]+\]/g, (match) => tokenMap[match] || match);
-                        navigator.clipboard.writeText(content).then(() => {
-                            showToast("✅ Copied (Unmasked)", "success");
-                        }).catch(() => {
-                            showToast("❌ Copy Failed", "error");
-                        });
-                    })();
-                } else {
-                    showToast("⚠️ No content found", "error");
+            // ── Full-container path ──────────────────────────────────────────
+            let container = lastRightClickedElement
+                ? lastRightClickedElement.closest('.markdown,.message-content,.text-base,.prose,.model-response')
+                : null;
+            if (!container && lastRightClickedElement) {
+                let el = lastRightClickedElement;
+                for (let i = 0; i < 12; i++) {
+                    el = el.parentElement;
+                    if (!el) break;
+                    if ((el.innerText || '').length > 40) { container = el; break; }
                 }
             }
-        }
+            if (container) {
+                if (typeof forceRedactContainer === 'function') await forceRedactContainer(container);
+                await unmaskInResponseDOM(container, true);
+                // No toast for unmask-only action
+            } else {
+                const selectedHtml = getSelectionHtml();
+                if (selectedHtml && selectedHtml.trim().length > 0) {
+                    handleDeanonymize(selectedHtml, true);
+                } else {
+                    const btn = findCopyButtonRelative(lastRightClickedElement);
+                    handleDeanonymizeElement(btn, lastRightClickedElement);
+                }
+            }
+        })();
+    } else if (msg.action === "CTX_UNMASK_COPY") {
+        (async () => {
+            // ── Selection-scoped path ────────────────────────────────────────
+            const sel = window.getSelection();
+            const hasSelection = sel && sel.rangeCount > 0 && sel.toString().trim().length > 0;
+
+            if (hasSelection) {
+                const range = sel.getRangeAt(0);
+                let container = range.commonAncestorContainer;
+                if (container.nodeType === Node.TEXT_NODE) container = container.parentElement;
+
+                // 1. Convert all [TOKEN] text nodes in container to pills (adds data-cw-orig)
+                if (typeof forceRedactContainer === 'function') await forceRedactContainer(container);
+
+                // 2. Clone range AFTER forceRedactContainer so pills have data-cw-orig set,
+                //    then read original values from those attributes (shadow DOM not an issue).
+                //    msg.selectionText is NOT used here because it doesn't include shadow DOM
+                //    content from already-revealed pills.
+                const unmasked = (typeof getRangeTextUnmasked === 'function')
+                    ? await getRangeTextUnmasked(range)
+                    : (msg.selectionText || '').replace(/\[[A-Z_]+_[A-Z0-9]+\]/g, async m => {
+                        const tm = await getTokenMap(); return tm[m] || m;
+                    });
+
+                // 3. Reveal ONLY pills within the selection range (visual preview)
+                if (typeof unmaskPillsInRange === 'function') unmaskPillsInRange(range, container);
+                else await unmaskInResponseDOM(container, true);
+
+                // 4. Copy to clipboard
+                try {
+                    await navigator.clipboard.writeText(unmasked);
+                    showToastNear('✅ Selection Unmasked & Copied', null);
+                } catch (_) { showToastNear('❌ Copy failed', null, 'error'); }
+                return;
+            }
+
+            // ── Full-container path ──────────────────────────────────────────
+            let container = lastRightClickedElement
+                ? lastRightClickedElement.closest('.markdown,.message-content,.text-base,.prose,.model-response')
+                : null;
+            if (!container && lastRightClickedElement) {
+                let el = lastRightClickedElement;
+                for (let i = 0; i < 12; i++) {
+                    el = el.parentElement;
+                    if (!el) break;
+                    if ((el.innerText || '').length > 40) { container = el; break; }
+                }
+            }
+            if (container) {
+                // Delegate to the same function used by the float button popup
+                await unmaskAndCopyContainer(container, null);
+            } else {
+                // Fallback: try selected text or direct element
+                const selectedHtml = getSelectionHtml();
+                const selectedContent = (selectedHtml && selectedHtml.trim().length > 0) ? selectedHtml : msg.selectionText;
+                if (selectedContent && selectedContent.trim().length > 0) {
+                    try {
+                        const tokenMap = await getTokenMap();
+                        const regex = /\[[A-Z]+_[A-Z0-9]+\]/g;
+                        const unmaskedHtml = selectedContent.replace(regex, match => tokenMap[match] || match);
+                        const tmp = document.createElement('div');
+                        tmp.innerHTML = unmaskedHtml;
+                        const unmaskedText = tmp.innerText || tmp.textContent;
+                        await navigator.clipboard.write([new ClipboardItem({
+                            'text/html': new Blob([unmaskedHtml], { type: 'text/html' }),
+                            'text/plain': new Blob([unmaskedText], { type: 'text/plain' })
+                        })]);
+                        showToastNear('✅ Copied (Unmasked)', null);
+                    } catch (e) {
+                        showToastNear('❌ Copy Failed', null, 'error');
+                    }
+                } else {
+                    const btn = findCopyButtonRelative(lastRightClickedElement);
+                    if (btn) {
+                        handleUnmaskAndCopy(btn, 0, 0, lastRightClickedElement);
+                    } else {
+                        showToastNear('⚠️ No content found', null, 'error');
+                    }
+                }
+            }
+        })();
     }
 });
+
+
 
 // --- PAGE-LEVEL CONTEXT MENU ---
 
@@ -129,6 +204,11 @@ let typingTimer;
 const doneTypingInterval = 500;
 
 function handleTyping(e) {
+    // Skip events from our own overlay shadow DOM
+    if (typeof inputOverlayContainer !== 'undefined' && inputOverlayContainer && inputOverlayContainer.contains(e.target)) return;
+    if (e.target && e.target.id === 'cw-input-overlay-host') return;
+    // Skip events from the ChatWall mode menu (email / licence fields etc.)
+    if (typeof cwModeMenuEl !== 'undefined' && cwModeMenuEl && cwModeMenuEl.contains(e.target)) return;
 
     const editable = getEditableTarget(e.target);
     if (editable) {
@@ -145,13 +225,31 @@ function handleTyping(e) {
 document.addEventListener('keyup', handleTyping, true);
 document.addEventListener('input', handleTyping, true);
 document.addEventListener('focusin', (e) => {
+    // Skip events retargeted from inside our own overlay shadow DOM
+    if (typeof inputOverlayContainer !== 'undefined' && inputOverlayContainer && inputOverlayContainer.contains(e.target)) return;
+    if (e.target && e.target.id === 'cw-input-overlay-host') return;
+    // Skip mode menu inputs (email, licence key, etc.)
+    if (typeof cwModeMenuEl !== 'undefined' && cwModeMenuEl && cwModeMenuEl.contains(e.target)) return;
     const editable = getEditableTarget(e.target);
-    if (editable) showFloatButton(editable);
+    if (!editable) return;
+    const floatOn = cwInputMode === 'float';
+    // Integrated overlay is intentionally NOT opened on focus (avoids auto-open on
+    // page-load / new-chat auto-focus). It is opened exclusively on click (see below).
+    if (floatOn) showFloatButton(editable);
 }, true);
 
 document.addEventListener('click', (e) => {
+    // Skip events retargeted from inside our own overlay shadow DOM
+    if (typeof inputOverlayContainer !== 'undefined' && inputOverlayContainer && inputOverlayContainer.contains(e.target)) return;
+    if (e.target && e.target.id === 'cw-input-overlay-host') return;
+    // Skip mode menu inputs (email, licence key, etc.)
+    if (typeof cwModeMenuEl !== 'undefined' && cwModeMenuEl && cwModeMenuEl.contains(e.target)) return;
     const editable = getEditableTarget(e.target);
-    if (editable) showFloatButton(editable);
+    if (!editable) return;
+    const inteOn = cwInputMode === 'integrated' || cwInputMode === 'both';
+    const floatOn = cwInputMode === 'float';
+    if (inteOn && typeof showInputOverlay === 'function') showInputOverlay(editable);
+    if (floatOn) showFloatButton(editable);
 }, true);
 
 // --- SCROLL TRACKING ---

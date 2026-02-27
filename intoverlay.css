@@ -1,0 +1,455 @@
+/* ──────────────────────────────────────────────────────────────────────────── *
+ * intoverlay.css — Integrated overlay shadow-DOM styles                        *
+ * Dark theme derived from the full overlay palette:                            *
+ *   primary #6366f1 · success #16a34a · danger #ef4444                        *
+ *   White/light text on dark — indigo only for structure (borders, glows).     *
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+:host {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #e2e8f0;
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ── Shell ──────────────────────────────────────────────────────────────────── */
+#cwio-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.97);
+    border: 1.5px solid rgba(99, 102, 241, 0.45);
+    border-radius: 10px;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08), 0 4px 20px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    animation: cwio-in 0.12s ease-out;
+}
+
+@keyframes cwio-in {
+    from {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Top bar ────────────────────────────────────────────────────────────────── */
+#cwio-topbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 5px 2px 8px;
+    min-height: 30px;
+    background: rgba(8, 12, 28, 0.90);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.22);
+    gap: 4px;
+}
+
+/* ── Brand ──────────────────────────────────────────────────────────────────── */
+#cwio-brand {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+#cwio-brand span {
+    color: #c7d2fe;
+}
+
+#cwio-brand img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: 0.85;
+}
+
+/* ── Tool bar ───────────────────────────────────────────────────────────────── */
+#cwio-tools {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.cwio-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.72);
+    padding: 3px 6px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: background 0.12s, color 0.12s;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    font-family: inherit;
+    line-height: 1;
+}
+
+.cwio-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.cwio-btn:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: #fff;
+}
+
+.cwio-btn.active {
+    background: rgba(99, 102, 241, 0.30);
+    color: #fff;
+}
+
+.cwio-btn.btn-close:hover {
+    background: rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
+}
+
+.cwio-btn.btn-exp:hover {
+    background: rgba(99, 102, 241, 0.18);
+    color: #fff;
+}
+
+.cwio-btn.btn-fav {
+    color: rgba(250, 204, 21, 0.55);
+}
+
+.cwio-btn.btn-fav:hover {
+    background: rgba(250, 204, 21, 0.15);
+    color: #fde68a;
+}
+
+.cwio-btn.btn-fav.active {
+    background: rgba(250, 204, 21, 0.22);
+    color: #fde68a;
+}
+
+.cwio-btn.btn-send {
+    color: #fff;
+    border: 1px solid rgba(99, 102, 241, 0.50);
+    background: rgba(99, 102, 241, 0.18);
+}
+
+.cwio-btn.btn-send:hover {
+    background: rgba(99, 102, 241, 0.40);
+    color: #fff;
+    border-color: rgba(99, 102, 241, 0.70);
+}
+
+.cwio-sep {
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.10);
+    margin: 0 2px;
+    flex-shrink: 0;
+}
+
+/* ── Editor area ────────────────────────────────────────────────────────────── */
+#cwio-editor {
+    position: relative;
+    flex: 1;
+    min-height: 24px;
+    overflow: hidden;
+}
+
+.cwio-layer {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 7px 10px;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#cwio-hl {
+    z-index: 1;
+    color: #f1f5f9;
+    background: transparent !important;
+    pointer-events: none !important;
+    user-select: none;
+    overflow-y: hidden;
+}
+
+#cwio-ta {
+    z-index: 2;
+    background: transparent !important;
+    color: transparent !important;
+    caret-color: #e2e8f0 !important;
+    resize: none;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.35) transparent;
+}
+
+#cwio-ta::-webkit-scrollbar {
+    width: 4px;
+}
+
+#cwio-ta::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.40);
+    border-radius: 2px;
+}
+
+#cwio-ta::placeholder {
+    color: rgba(255, 255, 255, 0.28);
+}
+
+#cwio-ta::selection {
+    background: rgba(99, 102, 241, 0.25);
+}
+
+/* ── Warning / tip strips ───────────────────────────────────────────────────── */
+#cwio-warn {
+    display: none;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: rgba(146, 64, 14, 0.28);
+    border-bottom: 1px solid rgba(234, 179, 8, 0.25);
+    font-size: 10.5px;
+    color: rgba(253, 230, 138, 0.85);
+    user-select: none;
+    line-height: 1.3;
+}
+
+#cwio-warn.visible {
+    display: flex;
+}
+
+#cwio-warn svg {
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+
+
+/* ── Token base ─────────────────────────────────────────────────────────────── */
+/* Catch-all for unknown types */
+.token {
+    display: inline;
+    border-radius: 3px;
+    background: rgba(148, 163, 184, 0.20);
+    color: #e2e8f0;
+    outline: 1px solid rgba(148, 163, 184, 0.35);
+    outline-offset: -1px;
+}
+
+/* ── Token colours (dark‑background palette) ────────────────────────────────── */
+.token-NAME,
+.token-ORG {
+    background: rgba(14, 165, 233, 0.22);
+    color: #7dd3fc;
+    outline: 1px solid rgba(14, 165, 233, 0.4);
+    outline-offset: -1px;
+}
+
+.token-EMAIL {
+    background: rgba(249, 115, 22, 0.22);
+    color: #fdba74;
+    outline: 1px solid rgba(249, 115, 22, 0.4);
+    outline-offset: -1px;
+}
+
+.token-PHONE {
+    background: rgba(234, 88, 12, 0.22);
+    color: #fb923c;
+    outline: 1px solid rgba(234, 88, 12, 0.4);
+    outline-offset: -1px;
+}
+
+.token-CITY,
+.token-COUNTRY,
+.token-GPS,
+.token-LOC,
+.token-POSTAL {
+    background: rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
+    outline: 1px solid rgba(239, 68, 68, 0.4);
+    outline-offset: -1px;
+}
+
+.token-URL,
+.token-PATH {
+    background: rgba(6, 182, 212, 0.22);
+    color: #67e8f9;
+    outline: 1px solid rgba(6, 182, 212, 0.4);
+    outline-offset: -1px;
+}
+
+.token-DATE,
+.token-TIME {
+    background: rgba(168, 85, 247, 0.22);
+    color: #d8b4fe;
+    outline: 1px solid rgba(168, 85, 247, 0.4);
+    outline-offset: -1px;
+}
+
+.token-MONEY,
+.token-AMOUNT {
+    background: rgba(22, 163, 74, 0.22);
+    color: #86efac;
+    outline: 1px solid rgba(22, 163, 74, 0.4);
+    outline-offset: -1px;
+}
+
+.token-SECRET,
+.token-PIN,
+.token-JWT,
+.token-KEY,
+.token-AWS,
+.token-PASS,
+.token-PASSPORT,
+.token-SSN {
+    background: rgba(239, 68, 68, 0.28);
+    color: #fca5a5;
+    outline: 1px solid rgba(239, 68, 68, 0.5);
+    outline-offset: -1px;
+}
+
+.token-IBAN,
+.token-CB,
+.token-CRYPTO,
+.token-BIC,
+.token-VCS,
+.token-VAT,
+.token-EAN {
+    background: rgba(234, 179, 8, 0.22);
+    color: #fde68a;
+    outline: 1px solid rgba(234, 179, 8, 0.4);
+    outline-offset: -1px;
+}
+
+.token-UUID,
+.token-ID,
+.token-VIN {
+    background: rgba(99, 102, 241, 0.22);
+    color: #c7d2fe;
+    outline: 1px solid rgba(99, 102, 241, 0.4);
+    outline-offset: -1px;
+}
+
+.token-IP,
+.token-MAC {
+    background: rgba(14, 165, 233, 0.18);
+    color: #7dd3fc;
+    outline: 1px solid rgba(14, 165, 233, 0.3);
+    outline-offset: -1px;
+}
+
+.token-CUSTOM {
+    background: rgba(148, 163, 184, 0.22);
+    color: #e2e8f0;
+    outline: 1px solid rgba(148, 163, 184, 0.4);
+    outline-offset: -1px;
+}
+
+.token-FAVORITE {
+    background: rgba(250, 204, 21, 0.25);
+    color: #fde68a;
+    outline: 1px solid rgba(250, 204, 21, 0.45);
+    outline-offset: -1px;
+}
+
+/* Premium-only tokens (free plan): dashed underline only, no box */
+.token-premium {
+    text-decoration: underline dashed #f97316;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    cursor: help;
+    color: inherit;
+}
+
+/* Locked tokens rendered by finalizeProcessing (same as .token-premium visually) */
+#cwio-hl .token-locked {
+    position: relative;
+    /* anchor for the absolutely-positioned warning icon */
+    display: inline;
+    outline: 1px dashed #f97316;
+    outline-offset: -1px;
+    border-radius: 3px;
+    color: inherit;
+    cursor: help;
+}
+
+/* Warning icon: position:absolute takes it OUT of text flow → zero layout impact,
+   so the textarea caret always stays in sync with the highlight layer text.
+   pointer-events:auto lets the JS tooltip (position:fixed) fire on hover. */
+#cwio-hl .token-locked .warning-icon {
+    position: absolute;
+    bottom: -5px;
+    right: -4px;
+    font-size: 9px;
+    line-height: 1;
+    pointer-events: auto;
+    cursor: help;
+}
+
+/* ── Painter-mode badge on mask / unmask buttons (mirrors full overlay) ──────── */
+#cwio-mask,
+#cwio-unmask {
+    position: relative;
+}
+
+#cwio-mask.active,
+#cwio-unmask.active {
+    background: rgba(99, 102, 241, 0.28) !important;
+    border-color: rgba(99, 102, 241, 0.7) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Brush badge — same SVG as the full overlay painter badge */
+#cwio-mask.active::after,
+#cwio-unmask.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 14px;
+    height: 14px;
+    background-color: #1e1b30;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a5b4fc' stroke='none'%3E%3Cpath d='M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a.996.996 0 0 0-1.41 0L9 12.25 11.75 15l8.96-8.96a.996.996 0 0 0 0-1.41z'/%3E%3C%2Fsvg%3E");
+    background-size: 10px 10px;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 50%;
+    border: 1px solid rgba(99, 102, 241, 0.5);
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}

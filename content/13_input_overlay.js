@@ -65,6 +65,13 @@ let reopenBadgeRafId = null;  // unused (kept for cancelAnimationFrame safety)
 let reopenBadgeMutObs = null;  // MutationObserver — detects framework-driven clears
 /** Set to true by the re-open badge click to bypass the "native has content" guard. */
 let forceOverlayOpen = false;
+/** Always-On mode: open the overlay automatically on input focus (no badge click needed). */
+let intAlwaysOn = false;
+
+// Load Always-On state from storage (false by default)
+chrome.storage.local.get('cwIntAlwaysOn', (r) => {
+    intAlwaysOn = !!r.cwIntAlwaysOn;
+});
 
 // Per-session custom masking state
 // (reset each time the overlay opens)
@@ -662,6 +669,7 @@ function initInputOverlayEvents() {
         });
     }
 
+
     // ── Send masked to AI ──────────────────────────────────────────────────
     const btnSend = inputOverlayShadowRoot.getElementById('cwio-send');
     if (btnSend) btnSend.addEventListener('click', () => sendMasked());
@@ -756,8 +764,6 @@ function initInputOverlayEvents() {
             });
             item.addEventListener('mouseenter', () => item.style.background = 'rgba(99,102,241,0.22)');
             item.addEventListener('mouseleave', () => item.style.background = '');
-            // Stop BOTH mousedown and click so the website's click-outside handler
-            // never fires when the user picks a menu item
             item.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
             item.addEventListener('click', e => {
                 e.preventDefault(); e.stopPropagation();
@@ -1287,19 +1293,19 @@ function showReopenBadge(nativeEl) {
     Object.assign(badge.style, {
         position: 'fixed', zIndex: '2147483640',
         display: 'flex', alignItems: 'center', gap: '6px',
-        background: 'rgba(99,102,241,0.18)',
-        border: '1px solid rgba(99,102,241,0.50)',
+        background: 'rgba(30,41,59,0.92)',
+        border: '1px solid rgba(148,163,184,0.30)',
         borderRadius: '20px', padding: '5px 12px 5px 8px',
-        cursor: 'pointer', color: '#fff',
+        cursor: 'pointer', color: '#e2e8f0',
         fontFamily: 'system-ui,sans-serif', fontSize: '12px', fontWeight: '600',
         backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
         userSelect: 'none', whiteSpace: 'nowrap',
-        opacity: '0.9', transition: 'opacity 0.15s, background 0.15s',
+        opacity: '0.88', transition: 'opacity 0.15s, background 0.15s',
         pointerEvents: 'auto',
     });
     badge.innerHTML = `<img src="${chrome.runtime.getURL('logo.svg')}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;flex-shrink:0">&nbsp;Mask with ChatWall`;
-    badge.addEventListener('mouseenter', () => { badge.style.opacity = '1'; badge.style.background = 'rgba(99,102,241,0.40)'; badge.style.borderColor = 'rgba(99,102,241,0.70)'; });
-    badge.addEventListener('mouseleave', () => { badge.style.opacity = '0.9'; badge.style.background = 'rgba(99,102,241,0.18)'; badge.style.borderColor = 'rgba(99,102,241,0.50)'; });
+    badge.addEventListener('mouseenter', () => { badge.style.opacity = '1'; badge.style.background = 'rgba(30,41,59,1.0)'; badge.style.borderColor = 'rgba(148,163,184,0.55)'; });
+    badge.addEventListener('mouseleave', () => { badge.style.opacity = '0.88'; badge.style.background = 'rgba(30,41,59,0.92)'; badge.style.borderColor = 'rgba(148,163,184,0.30)'; });
     badge.addEventListener('click', (e) => {
         e.stopPropagation();
         hideReopenBadge();
@@ -1382,9 +1388,9 @@ function showInputOverlay(nativeEl) {
     // Hide badge — we are about to open the overlay
     hideReopenBadge();
 
-    // Badge-first UX: never auto-open the overlay on click.
-    // The overlay only opens when the user explicitly clicks the re-open badge.
-    if (!forceOverlayOpen) {
+    // Badge-first UX: show re-open badge unless Always-On is enabled or the
+    // badge was explicitly clicked (forceOverlayOpen).
+    if (!forceOverlayOpen && !intAlwaysOn) {
         // Don't recreate badge if it's already showing for this same element
         if (reopenBadgeNative !== nativeEl) {
             showReopenBadge(nativeEl);

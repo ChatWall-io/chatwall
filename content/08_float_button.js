@@ -424,6 +424,8 @@ function showUnmaskGuidePopup(anchorBtn) {
     const OLD = document.getElementById('cw-unmask-guide-host');
     if (OLD) OLD.remove();
 
+    const logoUrl = chrome.runtime.getURL('logo.svg');
+
     const host = document.createElement('div');
     host.id = 'cw-unmask-guide-host';
     host.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:auto;';
@@ -435,142 +437,103 @@ function showUnmaskGuidePopup(anchorBtn) {
         :host { display: block; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .popup {
-            background: linear-gradient(180deg, #13111f 0%, #0f0e1a 100%);
-            border: 1px solid rgba(99,102,241,0.2);
-            border-radius: 16px;
-            width: 320px;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.7), 0 4px 16px rgba(99,102,241,0.08);
-            color: #e2e8f0;
+            background: rgba(46,46,50,0.98);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            width: 300px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+            color: rgba(220,222,228,0.85);
             font-family: system-ui, -apple-system, sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.5;
             overflow: hidden;
         }
         .popup-header {
-            background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.1));
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            padding: 14px 16px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 11px 14px 9px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 9px;
         }
-        .popup-header .shield {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.2));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-        .popup-header-text {
-            flex: 1;
-        }
+
         .popup-header-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            color: #e0e7ff;
+            color: rgba(235,236,240,0.95);
             letter-spacing: -0.01em;
         }
         .popup-header-sub {
             font-size: 10.5px;
             color: rgba(255,255,255,0.35);
-            margin-top: 2px;
+            margin-top: 1px;
         }
         .methods {
-            padding: 12px 12px 8px;
+            padding: 6px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 1px;
         }
         .method {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: 12px;
-            transition: background 0.15s, border-color 0.15s;
+            padding: 8px 11px;
+            border-radius: 9px;
+            transition: background 0.12s;
             cursor: default;
         }
         .method:hover {
-            background: rgba(99,102,241,0.06);
-            border-color: rgba(99,102,241,0.15);
+            background: rgba(255,255,255,0.09);
         }
         .method-icon {
             flex-shrink: 0;
-            width: 36px;
-            height: 36px;
-            background: rgba(99,102,241,0.12);
-            border-radius: 10px;
+            width: 22px;
+            height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #a5b4fc;
+            color: rgba(220,222,228,0.6);
+            opacity: 0.7;
         }
-        .method-icon svg {
-            width: 18px;
-            height: 18px;
-        }
-        .method-content {
-            flex: 1;
-            min-width: 0;
-        }
+        .method-icon svg { width: 18px; height: 18px; }
+        .method-content { flex: 1; min-width: 0; }
         .method-title {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(235,236,240,0.95);
             line-height: 1.3;
         }
         .method-desc {
-            font-size: 10.5px;
-            color: rgba(255,255,255,0.4);
-            margin-top: 2px;
-            line-height: 1.4;
+            font-size: 11px;
+            color: rgba(255,255,255,0.38);
+            margin-top: 1px;
         }
         .method-desc em {
             font-style: normal;
-            color: #a5b4fc;
+            color: rgba(165,180,252,0.85);
             font-weight: 600;
         }
         .method-step {
             flex-shrink: 0;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(99,102,241,0.2);
-            color: #a5b4fc;
+            background: rgba(255,255,255,0.09);
+            color: rgba(255,255,255,0.5);
             font-size: 9px;
             font-weight: 800;
             border-radius: 50%;
         }
         .popup-footer {
-            padding: 8px 12px 12px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .btn-dismiss {
-            display: block;
-            width: 100%;
-            background: rgba(99,102,241,0.12);
-            border: 1px solid rgba(99,102,241,0.2);
-            color: rgba(165,180,252,0.8);
-            font-size: 11.5px;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 8px;
-            padding: 7px 0;
-            font-family: inherit;
-            transition: all 0.15s;
-        }
-        .btn-dismiss:hover {
-            background: rgba(99,102,241,0.2);
-            border-color: rgba(99,102,241,0.35);
-            color: #c7d2fe;
+            padding: 6px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
         .btn-action {
             display: flex;
@@ -578,22 +541,38 @@ function showUnmaskGuidePopup(anchorBtn) {
             justify-content: center;
             gap: 8px;
             width: 100%;
-            background: linear-gradient(135deg, rgba(34,197,94,0.18), rgba(16,185,129,0.12));
-            border: 1px solid rgba(34,197,94,0.35);
-            color: rgba(134,239,172,0.9);
-            font-size: 12px;
-            font-weight: 700;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(235,236,240,0.9);
+            font-size: 12.5px;
+            font-weight: 600;
             cursor: pointer;
-            border-radius: 8px;
-            padding: 9px 0;
+            border-radius: 9px;
+            padding: 8px 0;
             font-family: inherit;
-            transition: all 0.15s;
-            margin-bottom: 6px;
+            transition: background 0.12s;
         }
         .btn-action:hover {
-            background: linear-gradient(135deg, rgba(34,197,94,0.28), rgba(16,185,129,0.22));
-            border-color: rgba(34,197,94,0.6);
-            color: #86efac;
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .btn-dismiss {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.32);
+            font-size: 11.5px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 9px;
+            padding: 6px 0;
+            font-family: inherit;
+            transition: color 0.12s, background 0.12s;
+        }
+        .btn-dismiss:hover {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.55);
         }
     `;
 
@@ -617,10 +596,10 @@ function showUnmaskGuidePopup(anchorBtn) {
     popup.className = 'popup';
     popup.innerHTML = `
         <div class="popup-header">
-            <div class="shield">🛡️</div>
-            <div class="popup-header-text">
+            <img src="${logoUrl}" style="width:18px;height:18px;object-fit:contain;flex-shrink:0;">
+            <div>
                 <div class="popup-header-title">How to unmask responses</div>
-                <div class="popup-header-sub">3 ways to reveal your original content</div>
+                <div class="popup-header-sub">Ways to reveal your original content</div>
             </div>
         </div>
         <div class="methods">
@@ -659,7 +638,7 @@ function showUnmaskGuidePopup(anchorBtn) {
 
     // Position near anchor — prefer above, fall back to below
     const rect = anchorBtn.getBoundingClientRect();
-    const popW = 320, popH = 300;
+    const popW = 300, popH = 280;
     const left = Math.max(8, Math.min(rect.right - popW, window.innerWidth - popW - 8));
     let top = rect.top - popH - 8 + window.scrollY;
     if (top < window.scrollY + 8) top = rect.bottom + 8 + window.scrollY;

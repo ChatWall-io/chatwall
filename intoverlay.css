@@ -2,7 +2,7 @@
  * intoverlay.css — Integrated overlay shadow-DOM styles                        *
  * Dark theme derived from the full overlay palette:                            *
  *   primary #6366f1 · success #16a34a · danger #ef4444                        *
- *   White/light text on dark — indigo only for structure (borders, glows).     *
+ *   Structure theme: #1e293b slate-800 (matches tooltip background)             *
  * ──────────────────────────────────────────────────────────────────────────── */
 
 :host {
@@ -29,10 +29,10 @@
     flex-direction: column;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.97);
-    border: 1.5px solid rgba(99, 102, 241, 0.45);
+    background: rgba(30, 41, 59, 0.98);
+    border: 1.5px solid rgba(148, 163, 184, 0.22);
     border-radius: 10px;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08), 0 4px 20px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.05), 0 4px 20px rgba(0, 0, 0, 0.32);
     overflow: hidden;
     animation: cwio-in 0.12s ease-out;
 }
@@ -57,9 +57,9 @@
     justify-content: space-between;
     padding: 2px 5px 2px 8px;
     min-height: 30px;
-    background: rgba(8, 12, 28, 0.90);
+    background: rgba(15, 23, 42, 0.94);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(99, 102, 241, 0.22);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.13);
     gap: 4px;
 }
 
@@ -76,7 +76,7 @@
 }
 
 #cwio-brand span {
-    color: #c7d2fe;
+    color: #94a3b8;
 }
 
 #cwio-brand img {
@@ -125,7 +125,7 @@
 }
 
 .cwio-btn.active {
-    background: rgba(99, 102, 241, 0.30);
+    background: rgba(148, 163, 184, 0.13);
     color: #fff;
 }
 
@@ -160,7 +160,7 @@
 }
 
 .cwio-btn.btn-send:hover {
-    background: rgba(99, 102, 241, 0.40);
+    background: rgba(99, 102, 241, 0.38);
     color: #fff;
     border-color: rgba(99, 102, 241, 0.70);
 }
@@ -172,6 +172,7 @@
     margin: 0 2px;
     flex-shrink: 0;
 }
+
 
 /* ── Editor area ────────────────────────────────────────────────────────────── */
 #cwio-editor {
@@ -215,7 +216,7 @@
     resize: none;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(99, 102, 241, 0.35) transparent;
+    scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
 }
 
 #cwio-ta::-webkit-scrollbar {
@@ -223,7 +224,7 @@
 }
 
 #cwio-ta::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.40);
+    background: rgba(148, 163, 184, 0.28);
     border-radius: 2px;
 }
 
@@ -232,7 +233,7 @@
 }
 
 #cwio-ta::selection {
-    background: rgba(99, 102, 241, 0.25);
+    background: rgba(148, 163, 184, 0.20);
 }
 
 /* ── Warning / tip strips ───────────────────────────────────────────────────── */

@@ -357,7 +357,7 @@ async function unmaskInResponseDOM(container, previewMode = false) {
                 const typeMatch = token.match(/^\[([A-Z_]+)_/);
                 const type = typeMatch ? typeMatch[1] : 'TOKEN';
                 if (typeof makePill === 'function') {
-                    const p = makePill(type, orig);
+                    const p = makePill(type, orig, token);
                     p.classList.add('cw-revealed');
                     p.title = 'ChatWall — content revealed (protected)';
                     frag.appendChild(p);

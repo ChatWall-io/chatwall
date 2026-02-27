@@ -13,6 +13,7 @@
 let inputOverlayTargetObserver = null;
 let inputOverlayScrollCleanup = null;
 let inputOverlayIsOpen = false;
+let inputOverlayBackdrop = null;  // full-screen modal backdrop
 let inputOverlayTypingTimer = null;
 let lockedMinHeight = 0;          // floor: original native textarea height at open
 let nativeOriginalContent = ''; // native content before newline injection
@@ -1034,6 +1035,9 @@ async function sendMasked() {
     clearTimeout(inputOverlayTypingTimer);
     deactivateIntOverlayCtx();   // restore full-overlay pipeline before removing DOM
 
+    if (inputOverlayBackdrop && inputOverlayBackdrop.parentNode)
+        inputOverlayBackdrop.parentNode.removeChild(inputOverlayBackdrop);
+    inputOverlayBackdrop = null;
     if (inputOverlayContainer && inputOverlayContainer.parentNode)
         inputOverlayContainer.parentNode.removeChild(inputOverlayContainer);
     if (inputOverlayTargetObserver) { inputOverlayTargetObserver.disconnect(); inputOverlayTargetObserver = null; }
@@ -1432,6 +1436,22 @@ function showInputOverlay(nativeEl) {
         nativeEl.dispatchEvent(new InputEvent('input', { inputType: 'insertText', data: '', bubbles: true }));
     } catch (_) { /* non-fatal */ }
 
+    // ── Modal backdrop: block all page interaction while overlay is open ────────
+    inputOverlayBackdrop = document.createElement('div');
+    inputOverlayBackdrop.id = 'cw-modal-backdrop';
+    Object.assign(inputOverlayBackdrop.style, {
+        position: 'fixed',
+        inset: '0',
+        zIndex: '2147483640',   // just below overlay container (2147483646)
+        background: 'rgba(0,0,0,0.35)',
+        cursor: 'default',
+    });
+    // Swallow all pointer events so page content is unreachable
+    inputOverlayBackdrop.addEventListener('click', e => e.stopPropagation());
+    inputOverlayBackdrop.addEventListener('mousedown', e => e.stopPropagation());
+    inputOverlayBackdrop.addEventListener('mouseup', e => e.stopPropagation());
+    inputOverlayBackdrop.addEventListener('pointerdown', e => e.stopPropagation());
+    document.body.appendChild(inputOverlayBackdrop);
     document.body.appendChild(inputOverlayContainer);
 
     // Injection dispatches an InputEvent; the host site (React/Lit/etc.) may
@@ -1508,8 +1528,12 @@ function hideInputOverlay(commit) {
     nativeMaxHeight = 0;
     nativeResists = false;
 
+    if (inputOverlayBackdrop && inputOverlayBackdrop.parentNode)
+        inputOverlayBackdrop.parentNode.removeChild(inputOverlayBackdrop);
+    inputOverlayBackdrop = null;
     if (inputOverlayContainer && inputOverlayContainer.parentNode)
         inputOverlayContainer.parentNode.removeChild(inputOverlayContainer);
+
     if (inputOverlayTargetObserver) { inputOverlayTargetObserver.disconnect(); inputOverlayTargetObserver = null; }
     if (inputOverlayScrollCleanup) { inputOverlayScrollCleanup(); inputOverlayScrollCleanup = null; }
 
@@ -1552,8 +1576,12 @@ function dismissInputOverlayAfterSend() {
 
     const nativeEl = inputOverlayNativeEl;
 
+    if (inputOverlayBackdrop && inputOverlayBackdrop.parentNode)
+        inputOverlayBackdrop.parentNode.removeChild(inputOverlayBackdrop);
+    inputOverlayBackdrop = null;
     if (inputOverlayContainer && inputOverlayContainer.parentNode)
         inputOverlayContainer.parentNode.removeChild(inputOverlayContainer);
+
     if (inputOverlayTargetObserver) { inputOverlayTargetObserver.disconnect(); inputOverlayTargetObserver = null; }
     if (inputOverlayScrollCleanup) { inputOverlayScrollCleanup(); inputOverlayScrollCleanup = null; }
 
@@ -1569,8 +1597,10 @@ function dismissInputOverlayAfterSend() {
     if (nativeEl) showReopenBadge(nativeEl);
 }
 
-// ─── Click-outside to close ───────────────────────────────────────────────────
-
+// ─── Click-outside: disabled in modal mode (backdrop blocks page clicks) ──────
+// The backdrop swallows all outside clicks, so this handler only fires for
+// clicks that pass through the shadow host or the mode-menu — both of which
+// should be allowed to proceed without closing the overlay.
 document.addEventListener('click', (e) => {
     if (!inputOverlayIsOpen) return;
     if (Date.now() - overlayOpenTime < 350) return;      // guard same-click close
@@ -1578,5 +1608,6 @@ document.addEventListener('click', (e) => {
     if (inputOverlayContainer.contains(e.target)) return;
     if (inputOverlayNativeEl && inputOverlayNativeEl.contains(e.target)) return;
     if (cwModeMenuEl && cwModeMenuEl.contains(e.target)) return;
-    hideInputOverlay(false);
+    // In modal mode don't close on outside clicks (backdrop blocks them anyway)
+    // hideInputOverlay(false);
 }, true);

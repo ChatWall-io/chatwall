@@ -287,6 +287,15 @@ document.addEventListener('focusin', (e) => {
     // Integrated overlay is intentionally NOT opened on focus (avoids auto-open on
     // page-load / new-chat auto-focus). It is opened exclusively on click (see below).
     if (floatOn) showFloatButton(editable);
+    // Restore "Mask with ChatWall" badge if the input still has masked tokens but
+    // the badge was hidden (e.g. suppressed when the green unmask button appeared).
+    const inteOn = cwInputMode === 'integrated' || cwInputMode === 'both';
+    if (inteOn && typeof reopenBadge !== 'undefined' && !reopenBadge && typeof showReopenBadge === 'function') {
+        const txt = (typeof extractTextFromElement === 'function') ? extractTextFromElement(editable) : (editable.value || editable.innerText || '');
+        if (/\[[A-Z]+_[A-Z0-9]+\]/.test(txt)) {
+            showReopenBadge(editable);
+        }
+    }
 }, true);
 
 document.addEventListener('click', (e) => {

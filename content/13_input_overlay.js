@@ -63,6 +63,8 @@ let reopenBadgeInputFn = null;  // unused
 let reopenBadgeResizeObs = null;  // ResizeObserver — repositions on input resize
 let reopenBadgeRafId = null;  // unused (kept for cancelAnimationFrame safety)
 let reopenBadgeMutObs = null;  // MutationObserver — detects framework-driven clears
+let reopenBadgeScrollAncestors = [];  // scrollable ancestor elements also listened to
+let reopenBadgeSyncInterval = null;   // interval that continuously syncs badge position
 /** Set to true by the re-open badge click to bypass the "native has content" guard. */
 let forceOverlayOpen = false;
 /** Always-On mode: open the overlay automatically on input focus (no badge click needed). */
@@ -1181,8 +1183,14 @@ function _commitInputOverlayToNative(restoreNative) {
 
 function hideReopenBadge() {
     if (reopenBadgeRafId) { cancelAnimationFrame(reopenBadgeRafId); reopenBadgeRafId = null; }
+    if (reopenBadgeSyncInterval) { clearInterval(reopenBadgeSyncInterval); reopenBadgeSyncInterval = null; }
     if (reopenBadgeScrollFn) {
         window.removeEventListener('scroll', reopenBadgeScrollFn, true);
+        // Clean up ancestor scroll listeners (ChatGPT inner scroll containers, etc.)
+        for (const el of reopenBadgeScrollAncestors) {
+            el.removeEventListener('scroll', reopenBadgeScrollFn, true);
+        }
+        reopenBadgeScrollAncestors = [];
         reopenBadgeScrollFn = null;
     }
     if (reopenBadgeResizeObs) { reopenBadgeResizeObs.disconnect(); reopenBadgeResizeObs = null; }
@@ -1221,7 +1229,28 @@ function positionReopenBadge() {
         }
     }
 
-    const r = reopenBadgeNative.getBoundingClientRect();
+    // Choose the best positional anchor.
+    // On ChatGPT the contenteditable sits inside a max-height scroll container
+    // (overflow:auto, ~208px tall). As the user scrolls within that container,
+    // the element's own getBoundingClientRect().top drifts upward. So we walk up
+    // to the nearest local scroll ancestor and anchor the badge there instead.
+    // "Local" means the container is smaller than 90% of the viewport — it's not
+    // the main page scroll, just a field-level clip.
+    let anchor = reopenBadgeNative;
+    let _el = reopenBadgeNative.parentElement;
+    while (_el && _el !== document.body) {
+        const _st = window.getComputedStyle(_el);
+        if (/auto|scroll/.test(_st.overflow + _st.overflowY)) {
+            const _pr = _el.getBoundingClientRect();
+            if (_pr.height > 0 && _pr.height < window.innerHeight * 0.9) {
+                anchor = _el;
+                break;
+            }
+        }
+        _el = _el.parentElement;
+    }
+
+    const r = anchor.getBoundingClientRect();
     if (r.width === 0) return;
     // Place badge just ABOVE the input's top-right corner so it never overlaps text
     const badgeH = 32;  // approximate badge height + gap
@@ -1341,9 +1370,24 @@ function showReopenBadge(nativeEl) {
     reopenBadgeResizeObs.observe(nativeEl);
     if (nativeEl.parentElement) reopenBadgeResizeObs.observe(nativeEl.parentElement);
 
-    // ─ Scroll: reposition on any scroll (passive + capture = zero overhead)
+    // ─ Continuous sync interval: catches all position changes regardless of source
+    // (page scroll, inner container scroll, ChatGPT layout shifts, overlay resize, etc.)
+    reopenBadgeSyncInterval = setInterval(positionReopenBadge, 100);
+
+    // ─ Scroll: reposition immediately on scroll events (supplements interval)
     reopenBadgeScrollFn = () => positionReopenBadge();
     window.addEventListener('scroll', reopenBadgeScrollFn, { passive: true, capture: true });
+    // Also listen on scrollable ancestors (e.g. ChatGPT's inner scroll container)
+    reopenBadgeScrollAncestors = [];
+    let _anc = nativeEl.parentElement;
+    while (_anc && _anc !== document.body) {
+        const _st = window.getComputedStyle(_anc);
+        if (/auto|scroll/.test(_st.overflow + _st.overflowY)) {
+            _anc.addEventListener('scroll', reopenBadgeScrollFn, { passive: true, capture: true });
+            reopenBadgeScrollAncestors.push(_anc);
+        }
+        _anc = _anc.parentElement;
+    }
 
     // ─ MutationObserver: catch framework-driven content resets (React post-send)
     //   that don't fire 'input' events. Also catches attribute/style changes that

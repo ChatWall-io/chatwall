@@ -173,11 +173,11 @@ function createFloatingButton() {
             if (currentFloatTarget) {
                 let currentText = extractTextFromElement(currentFloatTarget);
                 const tokenMap = await getTokenMap();
-                const hasKnownTokens = (currentText.match(/\[[A-Z]+_[A-Z0-9]+\]/g) || []).some(t => tokenMap.hasOwnProperty(t));
+                const hasKnownTokens = (currentText.match(/\[[A-Z]+_[A-Z0-9]+\]/g) || []).some(token => tokenMap.hasOwnProperty(token));
 
                 if (hasKnownTokens) {
-                    // Response has masked tokens — show how-to-unmask popup
-                    showUnmaskGuidePopup(floatBtn);
+                    // Input has masked tokens — offer re-edit or send
+                    showDecisionPopup(floatBtn);
                     return;
                 }
 
@@ -349,6 +349,9 @@ function hideFloatButton() {
 
 function showUnmaskButton(target) {
     if (anyOverlayOpen()) return;           // never on top of an open overlay
+    // Hide the "Mask with ChatWall" badge — the green unmask button is now the primary UI.
+    // The badge will be restored automatically when the user clicks/focuses the input again.
+    if (typeof hideReopenBadge === 'function') hideReopenBadge();
     createFloatingButton();
     currentUnmaskTarget = target;
     currentUnmaskAnchor = getVisualAnchor(target);
@@ -555,6 +558,16 @@ function showUnmaskGuidePopup(anchorBtn) {
         .btn-action:hover {
             background: rgba(255,255,255,0.12);
             border-color: rgba(255,255,255,0.15);
+        }
+        #guide-unmask-copy {
+            background: rgba(34,197,94,0.18);
+            border-color: rgba(34,197,94,0.40);
+            color: #86efac;
+        }
+        #guide-unmask-copy:hover {
+            background: rgba(34,197,94,0.28);
+            border-color: rgba(34,197,94,0.60);
+            color: #bbf7d0;
         }
         .btn-dismiss {
             display: block;

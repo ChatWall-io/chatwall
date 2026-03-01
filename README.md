@@ -7,9 +7,9 @@ ChatWall is a browser extension that acts as a privacy firewall between you and 
 
 ![ChatWall Screenshot](https://chatwall.io/img/sc3.png)
 
-### ▶️ Watch the Demo
+### ▶️ Watch the Demo 
 
-[![ChatWall Demo](https://chatwall.io/img/sc1.png)](https://chatwall.io)
+[![ChatWall Demo](https://youtu.be/lpoiyVhf08w)](https://youtu.be/lpoiyVhf08w)
 
 ## 🛡️ Key Features
 

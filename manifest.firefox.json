@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "ChatWall - Anonymise & Mask Private Data (PII) in ChatGPT or AI LLM prompts",
+    "name": "ChatWall - Anonymise & Mask Private Data (PII) in AI LLM prompts : ChatGPT…",
     "version": "1.2.0.0",
     "default_locale": "en",
     "description": "Secure your LLM prompts. Mask PII & private data locally before sending to ChatGPT. 100% Local Anonymisation, GDPR & sovereignty.",

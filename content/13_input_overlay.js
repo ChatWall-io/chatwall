@@ -188,8 +188,20 @@ function autoResize(ta, hl) {
     // Floor: original 1-line native height so overlay never shrinks below it.
     const minH = lockedMinHeight || rect.height;
 
-    // What content needs (grows as user types).
-    const contentEditorH = ta ? ta.scrollHeight : 0;
+    // ── Content height ───────────────────────────────────────────────────────
+    // IMPORTANT: the textarea fills the overlay container via flex, so its
+    // layout height equals the container height. scrollHeight returns
+    // MAX(content, layout-height), meaning on every keystroke the container
+    // would grow even without new lines (classic scrollHeight feedback loop).
+    // Fix: temporarily collapse the textarea to 0 so the browser computes
+    // the true minimum content height, then restore. No repaint happens.
+    let contentEditorH = 0;
+    if (ta) {
+        const saved = ta.style.height;
+        ta.style.height = '0px';
+        contentEditorH = ta.scrollHeight;
+        ta.style.height = saved;
+    }
     const contentDesiredH = Math.max(minH, contentEditorH + TOPBAR_HEIGHT + 4);
 
     // ── Ceiling logic ────────────────────────────────────────────────────────

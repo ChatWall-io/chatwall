@@ -523,13 +523,14 @@ function initInputOverlayEvents() {
         });
     }, { passive: true });
 
-    // ── Mask button ────────────────────────────────────────────────────────
+    // ── Mask button ───────────────────────────────────────────────────────────────────
     if (btnMask) {
         btnMask.addEventListener('mousedown', e => e.preventDefault());
         btnMask.addEventListener('click', () => {
             const sel = getInputSelection(ta);
             if (sel) {
                 applyMask(ta, hl, sel.start, sel.end);
+                ta.setSelectionRange(sel.end, sel.end); // collapse to where mouse was released
             } else {
                 inputOverlayActiveTool = inputOverlayActiveTool === 'mask' ? null : 'mask';
                 btnMask.classList.toggle('active', inputOverlayActiveTool === 'mask');
@@ -539,13 +540,14 @@ function initInputOverlayEvents() {
         });
     }
 
-    // ── Unmask button ──────────────────────────────────────────────────────
+    // ── Unmask button ─────────────────────────────────────────────────────────────
     if (btnUnmask) {
         btnUnmask.addEventListener('mousedown', e => e.preventDefault());
         btnUnmask.addEventListener('click', () => {
             const sel = getInputSelection(ta);
             if (sel) {
                 applyUnmask(ta, hl, sel.start, sel.end);
+                ta.setSelectionRange(sel.end, sel.end); // collapse to where mouse was released
             } else {
                 inputOverlayActiveTool = inputOverlayActiveTool === 'unmask' ? null : 'unmask';
                 if (btnUnmask) btnUnmask.classList.toggle('active', inputOverlayActiveTool === 'unmask');
@@ -649,7 +651,7 @@ function initInputOverlayEvents() {
 
     // Sticky tool: fires after drag-release inside the textarea
     ta.addEventListener('mouseup', () => {
-        if (!inputOverlayActiveTool) return;
+        if (!inputOverlayActiveTool) return;  // no paint tool active → leave selection alone
         const sel = getInputSelection(ta);
         if (!sel) return;
         if (inputOverlayActiveTool === 'mask') applyMask(ta, hl, sel.start, sel.end);
@@ -666,7 +668,7 @@ function initInputOverlayEvents() {
                 requestAnimationFrame(updateWarnBar);
             }
         }
-        ta.setSelectionRange(sel.start, sel.start);
+        ta.setSelectionRange(sel.end, sel.end); // collapse to where mouse was released
     });
 
     // ── Expand ─────────────────────────────────────────────────────────────

@@ -68,6 +68,42 @@
     "ctx_rem_fav": {
         "message": "Verwijder Favoriet"
     },
+    "ctx_rem_fav_simple": {
+        "message": "Verwijder uit favorieten"
+    },
+    "ctx_mask_selection": {
+        "message": "Selectie maskeren"
+    },
+    "ctx_mask_word": {
+        "message": "Woord maskeren"
+    },
+    "ctx_unmask_token": {
+        "message": "Token demaskeren"
+    },
+    "ctx_unmask_selection": {
+        "message": "Selectie demaskeren"
+    },
+    "ctx_add_fav_selection": {
+        "message": "Selectie toevoegen aan favorieten"
+    },
+    "ctx_add_fav_word": {
+        "message": "Toevoegen aan favorieten"
+    },
+    "ctx_configure_chatwall": {
+        "message": "ChatWall configureren"
+    },
+    "ctx_use_chatwall": {
+        "message": "ChatWall gebruiken"
+    },
+    "ctx_unsupported_title": {
+        "message": "ChatWall \u2014 Configureren"
+    },
+    "ctx_unsupported_body": {
+        "message": "\"ChatWall configureren\" werkt op ondersteunde AI-chatsites. Ga naar een van deze sites en probeer het opnieuw:"
+    },
+    "ctx_got_it": {
+        "message": "Begrepen"
+    },
     "ctx_select_all": {
         "message": "Alles selecteren"
     },
@@ -209,5 +245,11 @@
     },
     "tooltip_use_chatwall": {
         "message": "Klik om deze gegevens te beveiligen en te maskeren voor verzending."
+    },
+    "intoverlay_warn_msg": {
+        "message": "Sommige entiteiten vereisen"
+    },
+    "intoverlay_warn_msg2": {
+        "message": "voor automatisch maskeren \u2014 u kunt ze nog steeds handmatig maskeren/demaskeren."
     }
 }

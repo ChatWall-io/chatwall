@@ -277,14 +277,35 @@ async function handleDeanonymizeAndCopy(anchorEl = null) {
         '.formatted-text',
         // Claude
         '.model-response', '.agent-turn', '.is-assistant',
+        // Copilot (Microsoft)
+        '[data-testid="ai-message"]',
+        '[data-testid="ai-message-response"]',
+        '[data-testid*="ai-message"]',
+        '[class*="AIMessage"]', '[class*="ai-message"]',
         // Generic / others
         '.bot-message', '.prose', '.markdown', '.message-content',
         '[class*="assistant"]', '[class*="bot-message"]', '[class*="model-message"]'
     ].join(',');
 
+    let container = null;
     const allResponses = Array.from(document.querySelectorAll(RESPONSE_SELECTORS))
         .filter(el => (el.innerText || '').trim().length > 20);
-    const container = allResponses.length ? allResponses[allResponses.length - 1] : null;
+    if (allResponses.length) {
+        container = allResponses[allResponses.length - 1];
+    }
+
+    // Fallback: walk up from the last copy button on the page
+    if (!container) {
+        const lastCopyBtn = findLastCopyButton();
+        if (lastCopyBtn) {
+            let el = lastCopyBtn;
+            for (let i = 0; i < 20; i++) {
+                el = el.parentElement;
+                if (!el) break;
+                if ((el.innerText || '').trim().length > 40) { container = el; break; }
+            }
+        }
+    }
 
     await unmaskAndCopyContainer(container, anchorEl);
 }
@@ -336,7 +357,7 @@ async function unmaskInResponseDOM(container, previewMode = false) {
                 const typeMatch = token.match(/^\[([A-Z_]+)_/);
                 const type = typeMatch ? typeMatch[1] : 'TOKEN';
                 if (typeof makePill === 'function') {
-                    const p = makePill(type, orig);
+                    const p = makePill(type, orig, token);
                     p.classList.add('cw-revealed');
                     p.title = 'ChatWall — content revealed (protected)';
                     frag.appendChild(p);
@@ -418,6 +439,11 @@ async function getContainerTextUnmasked(container) {
     const tokenMap = await getTokenMap();
     // Clone the container to avoid mutating the live DOM
     const clone = container.cloneNode(true);
+    // Strip UI controls (buttons, SVGs, action bars) that would pollute plain text
+    for (const el of clone.querySelectorAll(
+        'button, [role="button"], svg, [aria-label], ' +
+        '[data-testid*="button"], [class*="action"], [class*="toolbar"]'
+    )) { try { el.remove(); } catch (_) { } }
     // In the clone, pill hosts have no shadow — replace each with its orig text
     for (const pill of clone.querySelectorAll('[data-cw-redact]')) {
         const orig = pill.getAttribute('data-cw-orig') || '';
@@ -458,6 +484,15 @@ async function getRangeTextUnmasked(range) {
 async function getContainerHtmlUnmasked(container) {
     const tokenMap = await getTokenMap();
     const clone = container.cloneNode(true);
+    // Strip UI controls — buttons, SVGs, action toolbars, tooltips.
+    // These appear as empty bordered boxes when pasted into rich-text editors
+    // because the page CSS that styles/hides them isn't available at the destination.
+    for (const el of clone.querySelectorAll(
+        'button, [role="button"], svg, ' +
+        '[data-testid*="button"], [data-testid*="action"], ' +
+        '[class*="action-bar"], [class*="toolbar"], [class*="actions"], ' +
+        '[class*="tooltip"], [aria-hidden="true"]'
+    )) { try { el.remove(); } catch (_) { } }
     // Replace pill elements with plain text spans (preserves surrounding HTML)
     for (const pill of clone.querySelectorAll('[data-cw-redact]')) {
         const orig = pill.getAttribute('data-cw-orig') || '';

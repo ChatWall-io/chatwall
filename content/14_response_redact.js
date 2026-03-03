@@ -59,7 +59,7 @@ const REDACT_TOKEN_RE = () => /\[([A-Z_]+)_([A-Z0-9]+)\]/g;
 
 // ─── Pill factory (each pill = closed shadow DOM) ────────────────────────────
 
-function makePill(type, original) {
+function makePill(type, original, tokenKey) {
     const def = REDACT_TYPES[type] || REDACT_DEFAULT_COLORS;
     const [bg, fg, border, svgInner, label] = def;
 
@@ -147,7 +147,7 @@ function makePill(type, original) {
 
     const lbl = document.createElement('span');
     lbl.id = 'lbl';
-    lbl.textContent = label;
+    lbl.textContent = tokenKey || label;
 
     const orig = document.createElement('span');
     orig.id = 'orig';
@@ -246,7 +246,7 @@ async function processBatch(nodes) {
         while ((m = re.exec(text)) !== null) {
             if (m.index > lastIdx)
                 frag.appendChild(document.createTextNode(text.slice(lastIdx, m.index)));
-            frag.appendChild(makePill(m[1], tokenMap[m[0]] || m[0]));
+            frag.appendChild(makePill(m[1], tokenMap[m[0]] || m[0], m[0]));
             lastIdx = m.index + m[0].length;
         }
         if (lastIdx < text.length)

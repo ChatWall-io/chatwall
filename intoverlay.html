@@ -38,14 +38,12 @@
                 </svg>
             </button>
 
-            <div class="cwio-sep"></div>
-
             <button id="cwio-send" type="button" class="cwio-btn btn-send" title="{{MSG_btn_send_masked}}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
                     <line x1="22" y1="2" x2="11" y2="13" />
                     <polygon points="22 2 15 22 11 13 2 9 22 2" />
                 </svg>
-                <span>Submit masked</span>
+                <span>{{MSG_btn_send_masked}}</span>
             </button>
 
             <div class="cwio-sep"></div>
@@ -75,9 +73,9 @@
             <line x1="12" y1="9" x2="12" y2="13" />
             <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
-        <span>Some entities require <strong>Premium</strong> to auto-mask — you can still mask/unmask them manually.
-            <a id="cwio-upgrade-link" href="https://chatwall.io/pricing" target="_blank"
-                style="color:#fde68a;text-decoration:underline;cursor:pointer;">Upgrade ↗</a>
+        <span>{{MSG_intoverlay_warn_msg}} <strong>Premium</strong> {{MSG_intoverlay_warn_msg2}}
+            <a id="cwio-upgrade-link" href="https://chatwall.io/#pricing" target="_blank"
+                style="color:#fde68a;text-decoration:underline;cursor:pointer;">{{MSG_btn_upgrade}} ↗</a>
         </span>
     </div>
 

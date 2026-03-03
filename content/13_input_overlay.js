@@ -13,6 +13,7 @@
 let inputOverlayTargetObserver = null;
 let inputOverlayScrollCleanup = null;
 let inputOverlayIsOpen = false;
+let inputOverlayBackdrop = null;  // full-screen modal backdrop
 let inputOverlayTypingTimer = null;
 let lockedMinHeight = 0;          // floor: original native textarea height at open
 let nativeOriginalContent = ''; // native content before newline injection
@@ -62,8 +63,17 @@ let reopenBadgeInputFn = null;  // unused
 let reopenBadgeResizeObs = null;  // ResizeObserver — repositions on input resize
 let reopenBadgeRafId = null;  // unused (kept for cancelAnimationFrame safety)
 let reopenBadgeMutObs = null;  // MutationObserver — detects framework-driven clears
+let reopenBadgeScrollAncestors = [];  // scrollable ancestor elements also listened to
+let reopenBadgeSyncInterval = null;   // interval that continuously syncs badge position
 /** Set to true by the re-open badge click to bypass the "native has content" guard. */
 let forceOverlayOpen = false;
+/** Always-On mode: open the overlay automatically on input focus (no badge click needed). */
+let intAlwaysOn = false;
+
+// Load Always-On state from storage (false by default)
+chrome.storage.local.get('cwIntAlwaysOn', (r) => {
+    intAlwaysOn = !!r.cwIntAlwaysOn;
+});
 
 // Per-session custom masking state
 // (reset each time the overlay opens)
@@ -178,8 +188,20 @@ function autoResize(ta, hl) {
     // Floor: original 1-line native height so overlay never shrinks below it.
     const minH = lockedMinHeight || rect.height;
 
-    // What content needs (grows as user types).
-    const contentEditorH = ta ? ta.scrollHeight : 0;
+    // ── Content height ───────────────────────────────────────────────────────
+    // IMPORTANT: the textarea fills the overlay container via flex, so its
+    // layout height equals the container height. scrollHeight returns
+    // MAX(content, layout-height), meaning on every keystroke the container
+    // would grow even without new lines (classic scrollHeight feedback loop).
+    // Fix: temporarily collapse the textarea to 0 so the browser computes
+    // the true minimum content height, then restore. No repaint happens.
+    let contentEditorH = 0;
+    if (ta) {
+        const saved = ta.style.height;
+        ta.style.height = '0px';
+        contentEditorH = ta.scrollHeight;
+        ta.style.height = saved;
+    }
     const contentDesiredH = Math.max(minH, contentEditorH + TOPBAR_HEIGHT + 4);
 
     // ── Ceiling logic ────────────────────────────────────────────────────────
@@ -480,8 +502,9 @@ function initInputOverlayEvents() {
             handleOptimisticInput(ta);
             hl.scrollTop = ta.scrollTop;
             autoResize(ta, hl);
-            processText(true);  // force full scan on paste
-            requestAnimationFrame(updateWarnBar);
+            // processText is async — await it so updateWarnBar fires AFTER
+            // currentMatches is populated with the scan result (locked tokens).
+            processText(true).then(() => requestAnimationFrame(updateWarnBar));
         }, 30);
     });
 
@@ -500,13 +523,14 @@ function initInputOverlayEvents() {
         });
     }, { passive: true });
 
-    // ── Mask button ────────────────────────────────────────────────────────
+    // ── Mask button ───────────────────────────────────────────────────────────────────
     if (btnMask) {
         btnMask.addEventListener('mousedown', e => e.preventDefault());
         btnMask.addEventListener('click', () => {
             const sel = getInputSelection(ta);
             if (sel) {
                 applyMask(ta, hl, sel.start, sel.end);
+                ta.setSelectionRange(sel.end, sel.end); // collapse to where mouse was released
             } else {
                 inputOverlayActiveTool = inputOverlayActiveTool === 'mask' ? null : 'mask';
                 btnMask.classList.toggle('active', inputOverlayActiveTool === 'mask');
@@ -516,13 +540,14 @@ function initInputOverlayEvents() {
         });
     }
 
-    // ── Unmask button ──────────────────────────────────────────────────────
+    // ── Unmask button ─────────────────────────────────────────────────────────────
     if (btnUnmask) {
         btnUnmask.addEventListener('mousedown', e => e.preventDefault());
         btnUnmask.addEventListener('click', () => {
             const sel = getInputSelection(ta);
             if (sel) {
                 applyUnmask(ta, hl, sel.start, sel.end);
+                ta.setSelectionRange(sel.end, sel.end); // collapse to where mouse was released
             } else {
                 inputOverlayActiveTool = inputOverlayActiveTool === 'unmask' ? null : 'unmask';
                 if (btnUnmask) btnUnmask.classList.toggle('active', inputOverlayActiveTool === 'unmask');
@@ -533,48 +558,71 @@ function initInputOverlayEvents() {
     }
 
     // ── Favorite button ────────────────────────────────────────────────────
+    // ── Premium favorites popup (shared helper) ───────────────────────────────
+    function showFavPremiumPopup() {
+        let popup = inputOverlayShadowRoot.getElementById('cwio-fav-popup');
+        if (!popup) {
+            popup = document.createElement('div');
+            popup.id = 'cwio-fav-popup';
+            Object.assign(popup.style, {
+                position: 'absolute', inset: '0',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(5,5,18,0.72)', backdropFilter: 'blur(6px)',
+                zIndex: '999', borderRadius: 'inherit',
+            });
+            const card = document.createElement('div');
+            Object.assign(card.style, {
+                background: 'linear-gradient(145deg,#13122a,#1a1838)',
+                border: '1px solid rgba(99,102,241,0.28)',
+                borderRadius: '14px', padding: '22px 24px 18px',
+                maxWidth: '230px', textAlign: 'center',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)',
+                color: '#e2e8f0', fontFamily: 'inherit',
+            });
+            card.innerHTML = `
+                <div style="width:36px;height:36px;margin:0 auto 12px;border-radius:50%;
+                    background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.35);
+                    display:flex;align-items:center;justify-content:center;font-size:16px;">⭐</div>
+                <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:#c7d2fe;letter-spacing:0.02em;">
+                    Favorites — Premium
+                </div>
+                <div style="font-size:11.5px;color:rgba(199,210,254,0.55);line-height:1.6;margin-bottom:18px;">
+                    Auto-mask your favourite words every time they appear in your prompts.
+                </div>
+                <a id="cwio-fav-upgrade" href="https://chatwall.io/#pricing" target="_blank"
+                    style="display:block;background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                    color:#fff;font-weight:600;font-size:12px;padding:8px 0;border-radius:8px;
+                    text-decoration:none;margin-bottom:10px;letter-spacing:0.03em;
+                    box-shadow:0 2px 12px rgba(99,102,241,0.35);transition:opacity .15s;">
+                    Upgrade to unlock ↗
+                </a>
+                <button id="cwio-fav-dismiss"
+                    style="background:none;border:none;color:rgba(199,210,254,0.35);
+                    font-size:11px;cursor:pointer;padding:2px 6px;font-family:inherit;
+                    transition:color .15s;">
+                    Not now
+                </button>`;
+            popup.appendChild(card);
+            inputOverlayShadowRoot.getElementById('cwio-shell').appendChild(popup);
+            popup.addEventListener('click', ev => { if (ev.target === popup) popup.style.display = 'none'; });
+            popup.querySelector('#cwio-fav-dismiss').addEventListener('click', () => { popup.style.display = 'none'; });
+            popup.querySelector('#cwio-fav-upgrade').addEventListener('click', () => { popup.style.display = 'none'; });
+            // Hover effects
+            const upgradeBtn = popup.querySelector('#cwio-fav-upgrade');
+            upgradeBtn.addEventListener('mouseenter', () => upgradeBtn.style.opacity = '0.88');
+            upgradeBtn.addEventListener('mouseleave', () => upgradeBtn.style.opacity = '');
+            const dismissBtn = popup.querySelector('#cwio-fav-dismiss');
+            dismissBtn.addEventListener('mouseenter', () => dismissBtn.style.color = 'rgba(199,210,254,0.65)');
+            dismissBtn.addEventListener('mouseleave', () => dismissBtn.style.color = '');
+        }
+        popup.style.display = 'flex';
+    }
+
     if (btnFav) {
         btnFav.addEventListener('mousedown', e => e.preventDefault());
         btnFav.addEventListener('click', () => {
             if (!isPremium()) {
-                let popup = inputOverlayShadowRoot.getElementById('cwio-fav-popup');
-                if (!popup) {
-                    popup = document.createElement('div');
-                    popup.id = 'cwio-fav-popup';
-                    Object.assign(popup.style, {
-                        position: 'absolute', inset: '0',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: 'rgba(10,10,20,0.6)', backdropFilter: 'blur(4px)',
-                        zIndex: '999', borderRadius: 'inherit',
-                    });
-                    const card = document.createElement('div');
-                    Object.assign(card.style, {
-                        background: '#18172a',
-                        border: '1px solid rgba(255,255,255,0.09)',
-                        borderRadius: '12px', padding: '20px 22px 16px',
-                        maxWidth: '224px', textAlign: 'center',
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.45)',
-                        color: '#e2e8f0', fontFamily: 'inherit',
-                    });
-                    card.innerHTML = `
-                        <div style="font-size:18px;margin-bottom:10px;opacity:0.85;">⭐</div>
-                        <div style="font-weight:600;font-size:13px;margin-bottom:5px;color:#cbd5e1;letter-spacing:0.01em;">Favorites is a Premium feature</div>
-                        <div style="font-size:11.5px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:16px;">
-                            Auto-mask your favourite words every time they appear.
-                        </div>
-                        <a id="cwio-fav-upgrade" href="https://chatwall.io/#pricing" target="_blank"
-                            style="display:block;background:#f59e0b;color:#0d0900;font-weight:700;font-size:12px;padding:7px 0;border-radius:7px;text-decoration:none;margin-bottom:9px;letter-spacing:0.02em;">
-                            Upgrade to Premium ↗
-                        </a>
-                        <button id="cwio-fav-dismiss" style="background:none;border:none;color:rgba(255,255,255,0.28);font-size:11px;cursor:pointer;padding:2px 6px;font-family:inherit;">Not now</button>
-                    `;
-                    popup.appendChild(card);
-                    inputOverlayShadowRoot.getElementById('cwio-shell').appendChild(popup);
-                    popup.addEventListener('click', ev => { if (ev.target === popup) popup.style.display = 'none'; });
-                    popup.querySelector('#cwio-fav-dismiss').addEventListener('click', () => { popup.style.display = 'none'; });
-                    popup.querySelector('#cwio-fav-upgrade').addEventListener('click', () => { popup.style.display = 'none'; });
-                }
-                popup.style.display = 'flex';
+                showFavPremiumPopup();
                 return;
             }
             const sel = getInputSelection(ta);
@@ -603,7 +651,7 @@ function initInputOverlayEvents() {
 
     // Sticky tool: fires after drag-release inside the textarea
     ta.addEventListener('mouseup', () => {
-        if (!inputOverlayActiveTool) return;
+        if (!inputOverlayActiveTool) return;  // no paint tool active → leave selection alone
         const sel = getInputSelection(ta);
         if (!sel) return;
         if (inputOverlayActiveTool === 'mask') applyMask(ta, hl, sel.start, sel.end);
@@ -620,7 +668,7 @@ function initInputOverlayEvents() {
                 requestAnimationFrame(updateWarnBar);
             }
         }
-        ta.setSelectionRange(sel.start, sel.start);
+        ta.setSelectionRange(sel.end, sel.end); // collapse to where mouse was released
     });
 
     // ── Expand ─────────────────────────────────────────────────────────────
@@ -636,6 +684,7 @@ function initInputOverlayEvents() {
             handleShowOverlay(currentText || null, blocksToPreserve);
         });
     }
+
 
     // ── Send masked to AI ──────────────────────────────────────────────────
     const btnSend = inputOverlayShadowRoot.getElementById('cwio-send');
@@ -654,37 +703,52 @@ function initInputOverlayEvents() {
         if (typeof window.cwOpenModeMenu === 'function') window.cwOpenModeMenu();
     });
 
-    // ── Premium warning-icon tooltip ───────────────────────────────────────
-    // Uses position:fixed to escape #cwio-hl overflow:hidden.
-    // Delegation works because .warning-icon has pointer-events:auto.
+    // ── Premium locked-token tooltip ──────────────────────────────────────────
+    // ta sits ON TOP of hl in z-order, so .token-locked spans never receive
+    // pointer events directly. Instead, listen on ta and do a bounding-rect
+    // hit-test against all .token-locked spans in hl on every mousemove.
     {
         let _cwTip = null;
-        inputOverlayShadowRoot.addEventListener('mouseover', (evT) => {
-            if (!evT.target.classList.contains('warning-icon')) return;
+        ta.addEventListener('mousemove', (evT) => {
+            const lockedSpans = hl.querySelectorAll('.token-locked');
+            let found = null;
+            for (const span of lockedSpans) {
+                const r = span.getBoundingClientRect();
+                if (evT.clientX >= r.left && evT.clientX <= r.right &&
+                    evT.clientY >= r.top && evT.clientY <= r.bottom) {
+                    found = span;
+                    break;
+                }
+            }
+            if (!found) {
+                if (_cwTip) _cwTip.style.opacity = '0';
+                return;
+            }
             if (!_cwTip) {
                 _cwTip = document.createElement('div');
                 Object.assign(_cwTip.style, {
                     position: 'fixed',
-                    background: '#18172a',
-                    border: '1px solid rgba(245,158,11,0.3)',
-                    color: '#e2e8f0', fontSize: '10.5px', fontWeight: '500',
-                    padding: '5px 10px', borderRadius: '6px',
-                    boxShadow: '0 3px 12px rgba(0,0,0,0.5)',
-                    pointerEvents: 'none', whiteSpace: 'nowrap',
+                    background: 'linear-gradient(135deg,#13122a,#1a1838)',
+                    border: '1px solid rgba(99,102,241,0.28)',
+                    color: '#c7d2fe', fontSize: '10.5px', fontWeight: '500',
+                    padding: '6px 10px', borderRadius: '7px', lineHeight: '1.5',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.55)',
+                    pointerEvents: 'none', whiteSpace: 'normal', maxWidth: '220px',
                     opacity: '0', transition: 'opacity 0.12s',
                     zIndex: '2147483647', fontFamily: 'inherit',
                 });
-                _cwTip.textContent = '\u2b50 Upgrade to Premium to auto-mask favourites';
                 const shell = inputOverlayShadowRoot.getElementById('cwio-shell');
                 if (shell) shell.appendChild(_cwTip);
             }
-            const r = evT.target.getBoundingClientRect();
-            _cwTip.style.left = Math.max(4, r.right - 4) + 'px';
-            _cwTip.style.top = (r.top - 32) + 'px';
+            const tooltipText = found.getAttribute('data-tooltip-text')
+                || '⭐ Upgrade to Premium to auto-mask this';
+            _cwTip.textContent = tooltipText;
+            _cwTip.style.left = (evT.clientX + 12) + 'px';
+            _cwTip.style.top = (evT.clientY - 34) + 'px';
             _cwTip.style.opacity = '1';
         });
-        inputOverlayShadowRoot.addEventListener('mouseout', (evT) => {
-            if (_cwTip && evT.target.classList.contains('warning-icon')) _cwTip.style.opacity = '0';
+        ta.addEventListener('mouseleave', () => {
+            if (_cwTip) _cwTip.style.opacity = '0';
         });
     }
 
@@ -716,8 +780,6 @@ function initInputOverlayEvents() {
             });
             item.addEventListener('mouseenter', () => item.style.background = 'rgba(99,102,241,0.22)');
             item.addEventListener('mouseleave', () => item.style.background = '');
-            // Stop BOTH mousedown and click so the website's click-outside handler
-            // never fires when the user picks a menu item
             item.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
             item.addEventListener('click', e => {
                 e.preventDefault(); e.stopPropagation();
@@ -797,7 +859,7 @@ function initInputOverlayEvents() {
         // ── 2. UNMASK / REMOVE FAVORITE ───────────────────────────────────────
         if (isFavorite) {
             ctxMenu.appendChild(mkItem(SVG_REM, 'Remove from favorites', () => {
-                if (!isPremium()) return;
+                if (!isPremium()) { showFavPremiumPopup(); hideCtxMenu(); return; }
                 if (typeof favoritesList !== 'undefined') {
                     favoritesList.delete(targetText);
                     inputCustomWords.delete(targetText);
@@ -826,7 +888,7 @@ function initInputOverlayEvents() {
         if (!isFavorite && targetText) {
             const favLabel = hasSelection ? 'Add selection to favorites' : `Add "${targetText}" to favorites`;
             ctxMenu.appendChild(mkItem(SVG_FAV, favLabel, () => {
-                if (!isPremium()) return;
+                if (!isPremium()) { showFavPremiumPopup(); hideCtxMenu(); return; }
                 const word = selText || (wordAt ? wordAt.text : '') || (tokenAtCursor ? tokenAtCursor.text : '');
                 if (word && typeof favoritesList !== 'undefined') {
                     favoritesList.add(word);
@@ -1034,6 +1096,9 @@ async function sendMasked() {
     clearTimeout(inputOverlayTypingTimer);
     deactivateIntOverlayCtx();   // restore full-overlay pipeline before removing DOM
 
+    if (inputOverlayBackdrop && inputOverlayBackdrop.parentNode)
+        inputOverlayBackdrop.parentNode.removeChild(inputOverlayBackdrop);
+    inputOverlayBackdrop = null;
     if (inputOverlayContainer && inputOverlayContainer.parentNode)
         inputOverlayContainer.parentNode.removeChild(inputOverlayContainer);
     if (inputOverlayTargetObserver) { inputOverlayTargetObserver.disconnect(); inputOverlayTargetObserver = null; }
@@ -1132,8 +1197,14 @@ function _commitInputOverlayToNative(restoreNative) {
 
 function hideReopenBadge() {
     if (reopenBadgeRafId) { cancelAnimationFrame(reopenBadgeRafId); reopenBadgeRafId = null; }
+    if (reopenBadgeSyncInterval) { clearInterval(reopenBadgeSyncInterval); reopenBadgeSyncInterval = null; }
     if (reopenBadgeScrollFn) {
         window.removeEventListener('scroll', reopenBadgeScrollFn, true);
+        // Clean up ancestor scroll listeners (ChatGPT inner scroll containers, etc.)
+        for (const el of reopenBadgeScrollAncestors) {
+            el.removeEventListener('scroll', reopenBadgeScrollFn, true);
+        }
+        reopenBadgeScrollAncestors = [];
         reopenBadgeScrollFn = null;
     }
     if (reopenBadgeResizeObs) { reopenBadgeResizeObs.disconnect(); reopenBadgeResizeObs = null; }
@@ -1146,7 +1217,54 @@ function hideReopenBadge() {
 
 function positionReopenBadge() {
     if (!reopenBadge || !reopenBadgeNative) return;
-    const r = reopenBadgeNative.getBoundingClientRect();
+
+    // Self-heal: if the SPA replaced the textarea after submit (React, Vue, etc.)
+    // the old reference is detached — find the live input and re-bind.
+    if (!document.body.contains(reopenBadgeNative)) {
+        const fresh = (typeof findMainInput === 'function') ? findMainInput() : null;
+        if (!fresh) return;
+        reopenBadgeNative = fresh;
+        // Rewire ResizeObserver to the new element so future resizes reposition badge
+        if (reopenBadgeResizeObs) {
+            reopenBadgeResizeObs.disconnect();
+            reopenBadgeResizeObs.observe(fresh);
+            if (fresh.parentElement) reopenBadgeResizeObs.observe(fresh.parentElement);
+        }
+        // Rewire MutationObserver to track the new element's content & parent
+        if (reopenBadgeMutObs) {
+            reopenBadgeMutObs.disconnect();
+            reopenBadgeMutObs.observe(fresh, {
+                characterData: true, childList: true, subtree: true,
+                attributes: true, attributeFilter: ['style', 'class'],
+            });
+            if (fresh.parentElement) {
+                reopenBadgeMutObs.observe(fresh.parentElement, { childList: true });
+            }
+        }
+    }
+
+    // Choose the best positional anchor.
+    // On ChatGPT the contenteditable sits inside a max-height scroll container
+    // (overflow:auto, ~208px tall). As the user scrolls within that container,
+    // the element's own getBoundingClientRect().top drifts upward. So we walk up
+    // to the nearest local scroll ancestor and anchor the badge there instead.
+    // "Local" means the container is smaller than 90% of the viewport — it's not
+    // the main page scroll, just a field-level clip.
+    let anchor = reopenBadgeNative;
+    let _el = reopenBadgeNative.parentElement;
+    while (_el && _el !== document.body) {
+        const _st = window.getComputedStyle(_el);
+        if (/auto|scroll/.test(_st.overflow + _st.overflowY)) {
+            const _pr = _el.getBoundingClientRect();
+            if (_pr.height > 0 && _pr.height < window.innerHeight * 0.9) {
+                anchor = _el;
+                break;
+            }
+        }
+        _el = _el.parentElement;
+    }
+
+    const r = anchor.getBoundingClientRect();
     if (r.width === 0) return;
     // Place badge just ABOVE the input's top-right corner so it never overlaps text
     const badgeH = 32;  // approximate badge height + gap
@@ -1218,19 +1336,19 @@ function showReopenBadge(nativeEl) {
     Object.assign(badge.style, {
         position: 'fixed', zIndex: '2147483640',
         display: 'flex', alignItems: 'center', gap: '6px',
-        background: 'rgba(99,102,241,0.18)',
-        border: '1px solid rgba(99,102,241,0.50)',
+        background: 'rgba(30,41,59,0.92)',
+        border: '1px solid rgba(148,163,184,0.30)',
         borderRadius: '20px', padding: '5px 12px 5px 8px',
-        cursor: 'pointer', color: '#fff',
+        cursor: 'pointer', color: '#e2e8f0',
         fontFamily: 'system-ui,sans-serif', fontSize: '12px', fontWeight: '600',
         backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
         userSelect: 'none', whiteSpace: 'nowrap',
-        opacity: '0.9', transition: 'opacity 0.15s, background 0.15s',
+        opacity: '0.88', transition: 'opacity 0.15s, background 0.15s',
         pointerEvents: 'auto',
     });
     badge.innerHTML = `<img src="${chrome.runtime.getURL('logo.svg')}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;flex-shrink:0">&nbsp;Mask with ChatWall`;
-    badge.addEventListener('mouseenter', () => { badge.style.opacity = '1'; badge.style.background = 'rgba(99,102,241,0.40)'; badge.style.borderColor = 'rgba(99,102,241,0.70)'; });
-    badge.addEventListener('mouseleave', () => { badge.style.opacity = '0.9'; badge.style.background = 'rgba(99,102,241,0.18)'; badge.style.borderColor = 'rgba(99,102,241,0.50)'; });
+    badge.addEventListener('mouseenter', () => { badge.style.opacity = '1'; badge.style.background = 'rgba(30,41,59,1.0)'; badge.style.borderColor = 'rgba(148,163,184,0.55)'; });
+    badge.addEventListener('mouseleave', () => { badge.style.opacity = '0.88'; badge.style.background = 'rgba(30,41,59,0.92)'; badge.style.borderColor = 'rgba(148,163,184,0.30)'; });
     badge.addEventListener('click', (e) => {
         e.stopPropagation();
         hideReopenBadge();
@@ -1266,9 +1384,24 @@ function showReopenBadge(nativeEl) {
     reopenBadgeResizeObs.observe(nativeEl);
     if (nativeEl.parentElement) reopenBadgeResizeObs.observe(nativeEl.parentElement);
 
-    // ─ Scroll: reposition on any scroll (passive + capture = zero overhead)
+    // ─ Continuous sync interval: catches all position changes regardless of source
+    // (page scroll, inner container scroll, ChatGPT layout shifts, overlay resize, etc.)
+    reopenBadgeSyncInterval = setInterval(positionReopenBadge, 100);
+
+    // ─ Scroll: reposition immediately on scroll events (supplements interval)
     reopenBadgeScrollFn = () => positionReopenBadge();
     window.addEventListener('scroll', reopenBadgeScrollFn, { passive: true, capture: true });
+    // Also listen on scrollable ancestors (e.g. ChatGPT's inner scroll container)
+    reopenBadgeScrollAncestors = [];
+    let _anc = nativeEl.parentElement;
+    while (_anc && _anc !== document.body) {
+        const _st = window.getComputedStyle(_anc);
+        if (/auto|scroll/.test(_st.overflow + _st.overflowY)) {
+            _anc.addEventListener('scroll', reopenBadgeScrollFn, { passive: true, capture: true });
+            reopenBadgeScrollAncestors.push(_anc);
+        }
+        _anc = _anc.parentElement;
+    }
 
     // ─ MutationObserver: catch framework-driven content resets (React post-send)
     //   that don't fire 'input' events. Also catches attribute/style changes that
@@ -1313,9 +1446,9 @@ function showInputOverlay(nativeEl) {
     // Hide badge — we are about to open the overlay
     hideReopenBadge();
 
-    // Badge-first UX: never auto-open the overlay on click.
-    // The overlay only opens when the user explicitly clicks the re-open badge.
-    if (!forceOverlayOpen) {
+    // Badge-first UX: show re-open badge unless Always-On is enabled or the
+    // badge was explicitly clicked (forceOverlayOpen).
+    if (!forceOverlayOpen && !intAlwaysOn) {
         // Don't recreate badge if it's already showing for this same element
         if (reopenBadgeNative !== nativeEl) {
             showReopenBadge(nativeEl);
@@ -1432,6 +1565,22 @@ function showInputOverlay(nativeEl) {
         nativeEl.dispatchEvent(new InputEvent('input', { inputType: 'insertText', data: '', bubbles: true }));
     } catch (_) { /* non-fatal */ }
 
+    // ── Modal backdrop: block all page interaction while overlay is open ────────
+    inputOverlayBackdrop = document.createElement('div');
+    inputOverlayBackdrop.id = 'cw-modal-backdrop';
+    Object.assign(inputOverlayBackdrop.style, {
+        position: 'fixed',
+        inset: '0',
+        zIndex: '2147483640',   // just below overlay container (2147483646)
+        background: 'rgba(0,0,0,0.35)',
+        cursor: 'default',
+    });
+    // Swallow all pointer events so page content is unreachable
+    inputOverlayBackdrop.addEventListener('click', e => e.stopPropagation());
+    inputOverlayBackdrop.addEventListener('mousedown', e => e.stopPropagation());
+    inputOverlayBackdrop.addEventListener('mouseup', e => e.stopPropagation());
+    inputOverlayBackdrop.addEventListener('pointerdown', e => e.stopPropagation());
+    document.body.appendChild(inputOverlayBackdrop);
     document.body.appendChild(inputOverlayContainer);
 
     // Injection dispatches an InputEvent; the host site (React/Lit/etc.) may
@@ -1508,8 +1657,12 @@ function hideInputOverlay(commit) {
     nativeMaxHeight = 0;
     nativeResists = false;
 
+    if (inputOverlayBackdrop && inputOverlayBackdrop.parentNode)
+        inputOverlayBackdrop.parentNode.removeChild(inputOverlayBackdrop);
+    inputOverlayBackdrop = null;
     if (inputOverlayContainer && inputOverlayContainer.parentNode)
         inputOverlayContainer.parentNode.removeChild(inputOverlayContainer);
+
     if (inputOverlayTargetObserver) { inputOverlayTargetObserver.disconnect(); inputOverlayTargetObserver = null; }
     if (inputOverlayScrollCleanup) { inputOverlayScrollCleanup(); inputOverlayScrollCleanup = null; }
 
@@ -1552,8 +1705,12 @@ function dismissInputOverlayAfterSend() {
 
     const nativeEl = inputOverlayNativeEl;
 
+    if (inputOverlayBackdrop && inputOverlayBackdrop.parentNode)
+        inputOverlayBackdrop.parentNode.removeChild(inputOverlayBackdrop);
+    inputOverlayBackdrop = null;
     if (inputOverlayContainer && inputOverlayContainer.parentNode)
         inputOverlayContainer.parentNode.removeChild(inputOverlayContainer);
+
     if (inputOverlayTargetObserver) { inputOverlayTargetObserver.disconnect(); inputOverlayTargetObserver = null; }
     if (inputOverlayScrollCleanup) { inputOverlayScrollCleanup(); inputOverlayScrollCleanup = null; }
 
@@ -1569,8 +1726,10 @@ function dismissInputOverlayAfterSend() {
     if (nativeEl) showReopenBadge(nativeEl);
 }
 
-// ─── Click-outside to close ───────────────────────────────────────────────────
-
+// ─── Click-outside: disabled in modal mode (backdrop blocks page clicks) ──────
+// The backdrop swallows all outside clicks, so this handler only fires for
+// clicks that pass through the shadow host or the mode-menu — both of which
+// should be allowed to proceed without closing the overlay.
 document.addEventListener('click', (e) => {
     if (!inputOverlayIsOpen) return;
     if (Date.now() - overlayOpenTime < 350) return;      // guard same-click close
@@ -1578,5 +1737,6 @@ document.addEventListener('click', (e) => {
     if (inputOverlayContainer.contains(e.target)) return;
     if (inputOverlayNativeEl && inputOverlayNativeEl.contains(e.target)) return;
     if (cwModeMenuEl && cwModeMenuEl.contains(e.target)) return;
-    hideInputOverlay(false);
+    // In modal mode don't close on outside clicks (backdrop blocks them anyway)
+    // hideInputOverlay(false);
 }, true);

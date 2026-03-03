@@ -338,15 +338,23 @@ chrome.runtime.onInstalled.addListener((details) => {
         contexts: ["all"]
     });
 
+    // ── Context menus (order: Mask/Unmask → separator → Use/Configure) ───────
     chrome.contextMenus.create({
-        id: "cw_docs",
+        id: "cw_unmask_preview",
         parentId: "cw_parent",
-        title: chrome.i18n.getMessage("ctx_read_docs"),
+        title: chrome.i18n.getMessage("ctx_unmask"),
         contexts: ["all"]
     });
 
     chrome.contextMenus.create({
-        id: "cw_separator_docs",
+        id: "cw_unmask_copy",
+        parentId: "cw_parent",
+        title: chrome.i18n.getMessage("ctx_unmask") + " & Copy",
+        contexts: ["all"]
+    });
+
+    chrome.contextMenus.create({
+        id: "cw_sep_tools",
         parentId: "cw_parent",
         type: "separator",
         contexts: ["all"]
@@ -355,35 +363,14 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.contextMenus.create({
         id: "cw_use_chatwall",
         parentId: "cw_parent",
-        title: "Use ChatWall",
+        title: chrome.i18n.getMessage("ctx_use_chatwall"),
         contexts: ["all"]
     });
 
     chrome.contextMenus.create({
         id: "cw_configure_chatwall",
         parentId: "cw_parent",
-        title: "Configure ChatWall",
-        contexts: ["all"]
-    });
-
-    chrome.contextMenus.create({
-        id: "cw_separator",
-        parentId: "cw_parent",
-        type: "separator",
-        contexts: ["all"]
-    });
-
-    chrome.contextMenus.create({
-        id: "cw_unmask_preview",
-        parentId: "cw_parent",
-        title: "Unmask",
-        contexts: ["all"]
-    });
-
-    chrome.contextMenus.create({
-        id: "cw_unmask_copy",
-        parentId: "cw_parent",
-        title: "Unmask and Copy",
+        title: chrome.i18n.getMessage("ctx_configure_chatwall"),
         contexts: ["all"]
     });
 });
@@ -406,19 +393,20 @@ chrome.action.onClicked.addListener((tab) => {
     chrome.tabs.create({ url: "https://chatwall.io/support.html#docs" });
 });
 
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === "cw_docs") {
-        chrome.tabs.create({ url: "https://chatwall.io/support.html#docs" });
-    } else if (info.menuItemId === "cw_unmask_preview") {
+    if (info.menuItemId === "cw_unmask_preview") {
         chrome.tabs.sendMessage(tab.id, { action: 'CTX_UNMASK_PREVIEW', selectionText: info.selectionText });
     } else if (info.menuItemId === "cw_unmask_copy") {
         chrome.tabs.sendMessage(tab.id, { action: 'CTX_UNMASK_COPY', selectionText: info.selectionText });
     } else if (info.menuItemId === "cw_use_chatwall") {
-        chrome.tabs.create({ url: "https://chatwall.io/support.html#docs" });
+        chrome.tabs.create({ url: "https://chatwall.io/support.html" });
     } else if (info.menuItemId === "cw_configure_chatwall") {
-        chrome.tabs.sendMessage(tab.id, { action: 'SHOW_OVERLAY' }, (response) => {
-            if (chrome.runtime.lastError) {
-                chrome.tabs.create({ url: "https://chatwall.io/support.html#docs" });
+        // Try to open the mode menu in-page.
+        // If the content script isn't injected (unsupported site), lastError fires → open support page.
+        chrome.tabs.sendMessage(tab.id, { action: 'OPEN_MODE_MENU' }, (response) => {
+            if (chrome.runtime.lastError || (response && !response.ok)) {
+                chrome.tabs.create({ url: 'https://chatwall.io/support.html?ref=configure' });
             }
         });
     }

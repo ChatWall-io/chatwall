@@ -68,6 +68,42 @@
     "ctx_rem_fav": {
         "message": "Retirer Favori"
     },
+    "ctx_rem_fav_simple": {
+        "message": "Retirer des favoris"
+    },
+    "ctx_mask_selection": {
+        "message": "Masquer la sélection"
+    },
+    "ctx_mask_word": {
+        "message": "Masquer le mot"
+    },
+    "ctx_unmask_token": {
+        "message": "Démasquer le jeton"
+    },
+    "ctx_unmask_selection": {
+        "message": "Démasquer la sélection"
+    },
+    "ctx_add_fav_selection": {
+        "message": "Ajouter la sélection aux favoris"
+    },
+    "ctx_add_fav_word": {
+        "message": "Ajouter aux favoris"
+    },
+    "ctx_configure_chatwall": {
+        "message": "Configurer ChatWall"
+    },
+    "ctx_use_chatwall": {
+        "message": "Utiliser ChatWall"
+    },
+    "ctx_unsupported_title": {
+        "message": "ChatWall \u2014 Configurer"
+    },
+    "ctx_unsupported_body": {
+        "message": "\"Configurer ChatWall\" fonctionne sur les sites d'IA supportés. Naviguez vers l'un d'eux, puis réessayez :"
+    },
+    "ctx_got_it": {
+        "message": "Compris"
+    },
     "ctx_select_all": {
         "message": "Tout sélectionner"
     },
@@ -209,5 +245,11 @@
     },
     "tooltip_use_chatwall": {
         "message": "Cliquez pour sécuriser et masquer ces données avant l'envoi."
+    },
+    "intoverlay_warn_msg": {
+        "message": "Certaines entités nécessitent"
+    },
+    "intoverlay_warn_msg2": {
+        "message": "pour l'auto-masquage — vous pouvez toujours les masquer/démasquer manuellement."
     }
 }

@@ -68,6 +68,42 @@
     "ctx_rem_fav": {
         "message": "Remove Favorite"
     },
+    "ctx_rem_fav_simple": {
+        "message": "Remove from favorites"
+    },
+    "ctx_mask_selection": {
+        "message": "Mask selection"
+    },
+    "ctx_mask_word": {
+        "message": "Mask word"
+    },
+    "ctx_unmask_token": {
+        "message": "Unmask token"
+    },
+    "ctx_unmask_selection": {
+        "message": "Unmask selection"
+    },
+    "ctx_add_fav_selection": {
+        "message": "Add selection to favorites"
+    },
+    "ctx_add_fav_word": {
+        "message": "Add to favorites"
+    },
+    "ctx_configure_chatwall": {
+        "message": "Configure ChatWall"
+    },
+    "ctx_use_chatwall": {
+        "message": "Use ChatWall"
+    },
+    "ctx_unsupported_title": {
+        "message": "ChatWall \u2014 Configure"
+    },
+    "ctx_unsupported_body": {
+        "message": "\"Configure ChatWall\" works on supported AI chat sites. Please navigate to one of these, then try again:"
+    },
+    "ctx_got_it": {
+        "message": "Got it"
+    },
     "ctx_select_all": {
         "message": "Select All"
     },
@@ -209,5 +245,11 @@
     },
     "tooltip_use_chatwall": {
         "message": "Click to secure and mask this data before sending."
+    },
+    "intoverlay_warn_msg": {
+        "message": "Some entities require"
+    },
+    "intoverlay_warn_msg2": {
+        "message": "to auto-mask \u2014 you can still mask/unmask them manually."
     }
 }

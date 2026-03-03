@@ -259,7 +259,6 @@ function sendToLLM() {
 
 async function handleShowOverlay(overrideContent = null, preservedManualBlocks = []) {
     if (!isStorageLoaded) {
-        // console.log("ChatWall: Logic wait for storage...");
         await loadCounters();
     }
 

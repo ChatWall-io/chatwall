@@ -45,7 +45,7 @@ function createOverlay() {
 
             // OPTIMIZATION: Perform string replacements BEFORE creating DOM to avoid layout reflows and Safari security blocks
             const logoUrl = chrome.runtime.getURL('logo.svg');
-            html = html.replace('src="logo.svg"', `src="${logoUrl}"`);
+            html = html.replace(/src="logo\.svg"/g, `src="${logoUrl}"`);
             html = html.replace(/http:\/\/localhost:3000/g, CONFIG_API_URL);
 
             const wrapper = document.createElement('div');

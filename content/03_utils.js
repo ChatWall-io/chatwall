@@ -340,7 +340,6 @@ function writeToNativeEl(el, text) {
     } else if (isGemini) {
         const html = `<span style="white-space:pre-wrap">${escapeHtml(text)}</span>`;
         success = document.execCommand('insertHTML', false, html);
-        console.log('[ChatWall writeToNativeEl] Gemini — execCommand result:', success);
     } else if (isFirefox) {
         const html = escapeHtml(text).replace(/\n/g, '<br>');
         success = document.execCommand('insertHTML', false, html);
@@ -381,11 +380,9 @@ function writeToNativeEl(el, text) {
     }
 
     if (!success) {
-        console.log('[ChatWall writeToNativeEl] ALL METHODS FAILED — falling back to innerText');
         el.innerText = text;
     }
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
-    console.log('[ChatWall writeToNativeEl] DONE — final innerText len:', el.innerText?.length);
 }
 

@@ -51,9 +51,9 @@ function loadModePreference() {
         if (['integrated', 'float', 'none', 'both'].includes(saved)) {
             applyMode(saved);
         } else {
-            // New users default to integrated mode
-            applyMode('integrated');
-            saveModePreference('integrated');
+            // New users: both Inline Masking and Editor Masking enabled by default
+            applyMode('both');
+            saveModePreference('both');
         }
     });
 }
@@ -188,6 +188,7 @@ function createModeMenu() {
         file: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
         privacy: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
         scale: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><path d="M3 9h18M3 9l3 6h6L3 9zM21 9l-4.5 6h-3L21 9"/></svg>`,
+        zap: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
     };
 
     const mkItem = (id, icon, label, sublabel, extraStyle) => {
@@ -286,8 +287,8 @@ function createModeMenu() {
 
     // ── Mode section ─────────────────────────────────────────────────────────
     panel.appendChild(mkSep('Mode'));
-    const floatItem = mkToggle('cw-mode-float', IC.shield, 'Masking Editor', 'Full masking editor');
-    const inteItem = mkToggle('cw-mode-integrated', IC.lock, 'Integrated', 'Inline masking');
+    const floatItem = mkToggle('cw-mode-float', IC.shield, 'Editor Masking', 'Full masking editor');
+    const inteItem = mkToggle('cw-mode-integrated', IC.lock, 'Inline Masking', 'Integrated inline overlay');
     // Independent toggles: each flips its own bit in the composite mode
     floatItem.onclick = () => {
         const floatOn = cwInputMode === 'float' || cwInputMode === 'both';
@@ -307,6 +308,23 @@ function createModeMenu() {
     };
     panel.appendChild(inteItem);
     panel.appendChild(floatItem);
+
+    // ── Always-On sub-toggle (Inline Masking only) ────────────────────────────
+    const alwaysOnItem = mkToggle('cw-mode-always-on', IC.zap, 'Always-On', 'Open overlay automatically on focus');
+    alwaysOnItem.onclick = () => {
+        chrome.storage.local.get('cwIntAlwaysOn', (r) => {
+            const next = !r.cwIntAlwaysOn;
+            chrome.storage.local.set({ cwIntAlwaysOn: next });
+            alwaysOnItem.setAttribute('data-active', String(next));
+            // Keep 13_input_overlay.js in sync (same content script scope)
+            if (typeof intAlwaysOn !== 'undefined') intAlwaysOn = next;
+        });
+    };
+    // Sync initial state from storage when panel is built
+    chrome.storage.local.get('cwIntAlwaysOn', (r) => {
+        alwaysOnItem.setAttribute('data-active', String(!!r.cwIntAlwaysOn));
+    });
+    panel.appendChild(alwaysOnItem);
 
     // ── Account section ──────────────────────────────────────────────────────
     panel.appendChild(mkHr());

@@ -5,11 +5,11 @@ ChatWall is a browser extension that acts as a privacy firewall between you and 
 ## 🌐 [Visit ChatWall.io](https://chatwall.io)
 
 
+![ChatWall Screenshot](https://chatwall.io/img/sc1.png)
 ![ChatWall Screenshot](https://chatwall.io/img/sc3.png)
 
 ### ▶️ Watch the Demo 
-
-[![ChatWall Demo](https://youtu.be/lpoiyVhf08w)](https://youtu.be/lpoiyVhf08w)
+[![ChatWall Demo](https://www.youtube.com/watch?v=lpoiyVhf08w)](https://www.youtube.com/watch?v=lpoiyVhf08w)
 
 ## 🛡️ Key Features
 
@@ -50,10 +50,13 @@ ChatWall is built on a **"Local First"** architecture to maximize privacy.
     -   `05_masking.js` – Outbound masking flow: tokenize → send to AI prompt.
     -   `06_unmasking.js` – Inbound unmasking flow: detect tokens → restore originals.
     -   `07_overlay_ui.js` – Overlay lifecycle (create / show / hide), toasts, plan UI.
-    -   `08_float_button.js` – Floating button, risk analysis, decision popup.
+    -   `08_float_button.js` – Floating button, risk analysis, decision popup, unmask guide.
     -   `09_overlay_events.js` – Overlay interaction (input, toolbar, scroll sync, settings, license).
     -   `10_context_menu.js` – Right-click context menu (cut, copy, paste, mask/unmask, favorites).
-    -   `11_page_events.js` – Chrome messages, typing detection, MutationObserver, bootstrap.
+    -   `11_page_events.js` – Chrome messages, typing detection, focus/click bootstrap, MutationObserver.
+    -   `12_mode_menu.js` – Mode menu UI: **Editor Masking**, **Inline Masking** and **Always-On** toggles; persists user mode preference via `chrome.storage.local`.
+    -   `13_input_overlay.js` – **Inline (integrated) overlay**: shadow-DOM panel injected directly over the native AI input. Handles auto-resize, paint-to-mask/unmask, "Mask with ChatWall" re-open badge, and send-masked flow.
+    -   `14_response_redact.js` – **Response token redaction**: scans AI reply nodes for `[TYPE_N]` placeholders and replaces them with interactive colour-coded pills. Hold to reveal the original value inline.
 -   **`detectors/`**: Contains the detection modules.
     -   `detector.js`: Base class for logic.
     -   `name.js`, `email.js`, etc.: Specific implementation rules.

@@ -1,4 +1,4 @@
-# ChatWall - AI Firewall Extension
+# ChatWall - Anonymise & Mask Private Data (PII) in AI LLM prompts : ChatGPT, Claude, Gemini, Grok etc.
 
 ChatWall is a browser extension that acts as a privacy firewall between you and AI providers (ChatGPT, Claude, Gemini, etc.). It automatically detects and anonymizes private and sensitive data (PII) like names, emails, phone numbers, and bank details *before* they leave your browser.
 
